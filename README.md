@@ -12,7 +12,7 @@
 
 ## 快速开始
 1. 看 [setup.md](./setup.md) 完成仓库 / Pages / PAT / 部署。
-2. 打开你的 Pages 链接即可使用。
+2. 打开 https://yizhigee.github.io/work/workspace.html 即可使用（需先在仓库 Settings → Pages 启用 main 分支）。
 
 ## 安全提示
 PAT 明文嵌入页面源码，请勿外传页面链接。详见《设计开发文档.md》§8 安全。

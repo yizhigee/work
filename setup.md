@@ -4,7 +4,7 @@
 新建 **Public** 仓库（Pages 免费需 public），如 `workbench`。
 
 ## 第 2 步：启用 GitHub Pages
-仓库 **Settings → Pages → Source** 选 `main` 分支 `/ (root)` → Save。记下 Pages 地址 `https://<user>.github.io/<repo>/`。
+仓库 **Settings → Pages → Source** 选 `main` 分支 `/ (root)` → Save。记下 Pages 地址 `https://yizhigee.github.io/work/`。
 
 ## 第 3 步：建 fine-grained PAT（仅本仓库）
 **GitHub → Settings → Developer settings → Fine-grained tokens → 生成**：
@@ -19,20 +19,18 @@
 编辑 `workspace.html` 顶部：
 ```js
 CONFIG = {
-  REPO_OWNER: '你的用户名',
-  REPO_NAME:  'workbench',
-  BRANCH:     'main',
-  DATA_PATH:  'data.json',
-  IMAGES_DIR: 'images',
-  POSTS_DIR:  'posts',
+  OWNER:       'yizhigee',
+  REPO:        'work',
+  BRANCH:      'main',
+  DATA_FILE:   'data.json',
   GITHUB_TOKEN: '上一步的 token'
 }
 ```
 
 ## 第 6 步：push 到仓库
 ```bash
-git clone https://github.com/<user>/<repo>.git
-cd <repo>
+git clone https://github.com/yizhigee/work.git
+cd work
 # 把 workspace.html / data.json / 本指南等拷进来
 git add .
 git commit -m "部署成长工作台"
