@@ -124,7 +124,7 @@ async function handleData(request, env) {
     const f = await r.json();
     const content = (f.content || '').replace(/\s/g, '');
     let data = '{}';
-    try { data = atob(content); } catch (e) { data = '{}'; }
+    try { data = decodeURIComponent(escape(atob(content))); } catch (e) { data = '{}'; }
     return json({ ok: true, data: data, sha: f.sha });
   }
   if (request.method === 'PUT') {
