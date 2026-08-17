@@ -3,5 +3,183 @@
   "records": [],
   "todos": [],
   "focus": [],
-  "settings": {}
+  "reading": [],
+  "fitness": [],
+  "anniversaries": [],
+  "notes": [],
+  "books": [
+    {
+      "_id": "id_msxdbepc_ibtjmc3",
+      "title": "滚雪球：巴菲特和他的财富人生（套装共2册）",
+      "author": "[美]艾丽斯·施罗德",
+      "cover": "https://res.weread.qq.com/wrepub/CB_A8kACsADS1xo75k75h6V18Su_parsecover",
+      "category": "",
+      "progress": 0,
+      "readTime": 0,
+      "noteCount": 0,
+      "status": "想读",
+      "raw": {
+        "bookId": "CB_A8kACsADS1xo75k75h6V18Su",
+        "deepLink": "https://weread.qq.com/book-detail?type=1&v=f32420f3643425f41386b41437341445331786f37356b37356836563138537591c",
+        "title": "滚雪球：巴菲特和他的财富人生（套装共2册）",
+        "author": "[美]艾丽斯·施罗德",
+        "cover": "https://res.weread.qq.com/wrepub/CB_A8kACsADS1xo75k75h6V18Su_parsecover",
+        "updateTime": 1786812748,
+        "secret": 1,
+        "finishReading": 0,
+        "readUpdateTime": 1786812759
+      }
+    },
+    {
+      "_id": "id_msxdbepc_7e61hzp",
+      "title": "炒股的智慧：在华尔街炒股为生的体验（华尔街炒股25年经验总结，畅销15年最经典的炒股理论！）",
+      "author": "陈江挺",
+      "cover": "https://res.weread.qq.com/wrepub/CB_Dtt0qb0o84Qa75k75S8A0AQp_parsecover",
+      "category": "",
+      "progress": 0,
+      "readTime": 0,
+      "noteCount": 0,
+      "status": "想读",
+      "raw": {
+        "bookId": "CB_A0WACuADS1xo75k75h92QDRv",
+        "deepLink": "https://weread.qq.com/book-detail?type=1&v=51142023643425f41305741437541445331786f37356b373568393251445276ce0",
+        "title": "炒股的智慧：在华尔街炒股为生的体验（华尔街炒股25年经验总结，畅销15年最经典的炒股理论！）",
+        "author": "陈江挺",
+        "cover": "https://res.weread.qq.com/wrepub/CB_Dtt0qb0o84Qa75k75S8A0AQp_parsecover",
+        "updateTime": 1786812744,
+        "secret": 1,
+        "finishReading": 0,
+        "readUpdateTime": 1786972861
+      }
+    },
+    {
+      "_id": "id_msxdbepc_fpq8bh0",
+      "title": "征服市场的人：西蒙斯传",
+      "author": "［美］格里高利·祖克曼;安昀 ［美］朱昂译",
+      "cover": "https://res.weread.qq.com/wrepub/CB_EzN3jZ3mvD9U75k74q4hrBVv_parsecover",
+      "category": "",
+      "progress": 0,
+      "readTime": 0,
+      "noteCount": 0,
+      "status": "想读",
+      "raw": {
+        "bookId": "CB_ATLACpADS1xo75k75hFpQ9kS",
+        "deepLink": "https://weread.qq.com/book-detail?type=1&v=cb542793643425f41544c41437041445331786f37356b373568467051396b53fa5",
+        "title": "征服市场的人：西蒙斯传",
+        "author": "［美］格里高利·祖克曼;安昀 ［美］朱昂译",
+        "cover": "https://res.weread.qq.com/wrepub/CB_EzN3jZ3mvD9U75k74q4hrBVv_parsecover",
+        "updateTime": 1786812740,
+        "secret": 1,
+        "finishReading": 0,
+        "readUpdateTime": 1786812740
+      }
+    },
+    {
+      "_id": "id_msxdbepc_xknvbbg",
+      "title": "聪明的投资者（第4版，注疏点评版）（证券投资实务领域的世界级、世纪级经典著作，1949年首次出版一来在股市上一直被奉为“股票投资圣经”。巴菲特称之为“有史以来最佳投资著作”。）",
+      "author": "本杰明·格雷厄姆",
+      "cover": "https://res.weread.qq.com/wrepub/CB_G9nDIFDHhCkh75j75j1xpApb_parsecover",
+      "category": "",
+      "progress": 0,
+      "readTime": 0,
+      "noteCount": 0,
+      "status": "想读",
+      "raw": {
+        "bookId": "CB_APCACoADS1xo75k75hAGF7yC",
+        "deepLink": "https://weread.qq.com/book-detail?type=1&v=361427a3643425f41504341436f41445331786f37356b3735684147463779430f5",
+        "title": "聪明的投资者（第4版，注疏点评版）（证券投资实务领域的世界级、世纪级经典著作，1949年首次出版一来在股市上一直被奉为“股票投资圣经”。巴菲特称之为“有史以来最佳投资著作”。）",
+        "author": "本杰明·格雷厄姆",
+        "cover": "https://res.weread.qq.com/wrepub/CB_G9nDIFDHhCkh75j75j1xpApb_parsecover",
+        "updateTime": 1786812738,
+        "secret": 1,
+        "finishReading": 0,
+        "readUpdateTime": 1786812738
+      }
+    }
+  ],
+  "readStats": {
+    "errcode": -2003,
+    "errlog": "CEts4Zg",
+    "errmsg": "参数格式错误"
+  },
+  "notebooks": [
+    {
+      "_id": "id_msxdbepc_mjtk3h7",
+      "bookId": "CB_A0WACuADS1xo75k75h92QDRv",
+      "title": "未命名",
+      "noteCount": 5,
+      "notes": [],
+      "raw": {
+        "bookId": "CB_A0WACuADS1xo75k75h92QDRv",
+        "book": {
+          "bookId": "CB_A0WACuADS1xo75k75h92QDRv",
+          "deepLink": "https://weread.qq.com/book-detail?type=1&v=51142023643425f41305741437541445331786f37356b373568393251445276ce0",
+          "title": "炒股的智慧：在华尔街炒股为生的体验（华尔街炒股25年经验总结，畅销15年最经典的炒股理论！）",
+          "author": "陈江挺",
+          "cover": "https://res.weread.qq.com/wrepub/CB_Dtt0qb0o84Qa75k75S8A0AQp_parsecover",
+          "version": 240351386,
+          "format": "epub",
+          "type": 0,
+          "price": 0,
+          "originalPrice": 0,
+          "soldout": 0,
+          "bookStatus": 1,
+          "payingStatus": 0,
+          "payType": 134217761,
+          "centPrice": 0,
+          "hasLecture": 0,
+          "finished": 1,
+          "free": 1,
+          "mcardDiscount": 0,
+          "ispub": 0,
+          "cpid": 0,
+          "publishTime": "",
+          "lastChapterIdx": 41,
+          "paperBook": {
+            "skuId": ""
+          },
+          "copyrightChapterUids": [],
+          "hasKeyPoint": true,
+          "limitShareChat": 0,
+          "inStoreBookId": "33209716",
+          "blockSaveImg": 0,
+          "language": "zh-wr",
+          "isTraditionalChinese": false,
+          "hideUpdateTime": false,
+          "isEPUBComics": 0,
+          "isVerticalLayout": 0,
+          "isShowTTS": 1,
+          "webBookControl": 0,
+          "selfProduceIncentive": false,
+          "isAutoDownload": 1
+        },
+        "reviewCount": 8,
+        "markedStatus": 1,
+        "readingProgress": 20,
+        "noteCount": 5,
+        "bookmarkCount": 0,
+        "sort": 1786897864
+      }
+    }
+  ],
+  "readingPlans": [],
+  "settings": {
+    "avatar": "",
+    "nick": "",
+    "sign": "",
+    "order": [
+      "home",
+      "habits",
+      "todos",
+      "focus",
+      "reading",
+      "fitness",
+      "anniversaries",
+      "notes",
+      "stats",
+      "settings"
+    ],
+    "focusDefault": 25,
+    "wereadSyncedAt": "2026-08-17T15:07:46.608Z"
+  }
 }
