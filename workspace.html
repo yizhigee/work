@@ -579,6 +579,27 @@
         </div>
 
         <div class="card">
+          <div class="card-title">微信读书同步</div>
+          <p class="card-hint">书架、阅读统计、笔记全部来自微信读书。Key 与 Worker 地址仅保存在本机浏览器，不写入公开源码。</p>
+          <div class="form-row">
+            <label>当前状态</label>
+            <span id="wereadStatus" class="token-status">未设置</span>
+          </div>
+          <div class="form-row">
+            <label>API Key</label>
+            <input class="form-input" id="wereadKeyInput" type="password" placeholder="wrk-xxx" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <label>Worker 地址</label>
+            <input class="form-input" id="wereadWorkerInput" type="text" placeholder="https://weread-proxy.xxx.workers.dev" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <button class="btn btn-primary btn-small" id="saveWereadBtn">保存配置</button>
+            <button class="btn btn-small btn-danger" id="clearWereadBtn">清除配置</button>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-title">数据管理</div>
           <p class="card-hint">清空将删除全部打卡、待办、专注、阅读、健身、纪念日与随笔数据，不可恢复。</p>
           <button class="btn btn-danger" id="clearDataBtn">一键清空全部数据</button>
@@ -590,35 +611,83 @@
         <div class="section-header">
           <h2 class="section-title">阅读</h2>
         </div>
-        <div class="card">
-          <div class="stats-row">
-            <div class="stat-card"><div class="stat-num" id="readWant">0</div><div class="stat-label">想读</div></div>
-            <div class="stat-card green"><div class="stat-num" id="readDoing">0</div><div class="stat-label">在读</div></div>
-            <div class="stat-card yellow"><div class="stat-num" id="readDone">0</div><div class="stat-label">读完</div></div>
+
+        <!-- 微信读书同步入口 -->
+        <div class="card weread-sync-card">
+          <div class="card-title">微信读书同步</div>
+          <div class="weread-sync-row">
+            <div>
+              <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
+              <div class="weread-sync-meta" id="wereadSyncMeta">首次使用请先在「设置」里保存 Key 和 Worker 地址</div>
+            </div>
+            <button class="btn btn-primary" id="wereadSyncBtn">立即同步</button>
           </div>
         </div>
+
+        <!-- 阅读统计报告 -->
+        <div class="card" id="readStatsCard" style="display:none;">
+          <div class="card-title">阅读报告</div>
+          <div class="stats-row read-stats-row">
+            <div class="stat-card"><div class="stat-num" id="rsTotalTime">0</div><div class="stat-label">总时长</div></div>
+            <div class="stat-card green"><div class="stat-num" id="rsReadDays">0</div><div class="stat-label">阅读天数</div></div>
+            <div class="stat-card yellow"><div class="stat-num" id="rsBookCount">0</div><div class="stat-label">读过本数</div></div>
+            <div class="stat-card"><div class="stat-num" id="rsFinishedCount">0</div><div class="stat-label">已读完</div></div>
+            <div class="stat-card green"><div class="stat-num" id="rsNoteCount">0</div><div class="stat-label">笔记数</div></div>
+            <div class="stat-card yellow"><div class="stat-num" id="rsStreakDays">0</div><div class="stat-label">连续天数</div></div>
+          </div>
+
+          <div class="read-section-title">阅读时长 TOP10</div>
+          <div id="rsTop10List"></div>
+
+          <div class="read-section-title">偏好分类</div>
+          <div id="rsCategoryList"></div>
+
+          <div class="read-section-title">历年阅读趋势</div>
+          <div class="read-trend-chart" id="rsTrendChart"></div>
+
+          <div class="read-section-title">阅读进度分布</div>
+          <div class="read-dist-row" id="rsDistRow"></div>
+
+          <div class="read-section-title">常读作者</div>
+          <div id="rsAuthorList"></div>
+        </div>
+
+        <div class="card" id="readStatsEmpty">
+          <div class="empty-state">暂无微信读书数据，配置好 Key 后点击上方「立即同步」即可生成你的专属阅读报告。</div>
+        </div>
+
+        <!-- 我的书架 -->
         <div class="card">
-          <div class="card-title">添加书籍</div>
-          <form id="addReadingForm">
+          <div class="card-title">我的书架 <span class="card-sub" id="bookshelfCount">0 本</span></div>
+          <div id="readingList"></div>
+          <div class="empty-state" id="readingEmpty">书架空空如也，同步微信读书后会显示在这里。</div>
+        </div>
+
+        <!-- 阅读计划 -->
+        <div class="card">
+          <div class="card-title">阅读计划</div>
+          <form id="addReadingPlanForm">
             <div class="form-row">
-              <input type="text" name="rTitle" placeholder="书名" required class="flex-1">
-              <input type="text" name="rAuthor" placeholder="作者" class="flex-1">
+              <input type="text" name="rpTitle" placeholder="书名" required class="flex-1">
+              <input type="date" name="rpDue" class="flex-1">
             </div>
             <div class="form-row">
-              <select name="rStatus" class="flex-1">
-                <option value="想读">想读</option>
-                <option value="在读">在读</option>
-                <option value="读完">读完</option>
+              <select name="rpStatus" class="flex-1">
+                <option value="未开始">未开始</option>
+                <option value="进行中">进行中</option>
+                <option value="已完成">已完成</option>
               </select>
-              <input type="number" name="rProgress" min="0" max="100" value="0" placeholder="进度%" class="flex-1">
             </div>
-            <button type="submit" class="btn btn-primary full-width">添加到书架</button>
+            <div class="form-row">
+              <textarea name="rpNote" placeholder="备注（可选）" rows="2" class="flex-1"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary full-width">添加计划</button>
           </form>
         </div>
         <div class="card">
-          <div class="card-title">我的书架</div>
-          <div id="readingList"></div>
-          <div class="empty-state" id="readingEmpty">书架空空如也，去添加一本书吧～</div>
+          <div class="card-title">计划列表</div>
+          <div id="readingPlanList"></div>
+          <div class="empty-state" id="readingPlanEmpty">还没有阅读计划，添加一个吧～</div>
         </div>
       </section>
 
@@ -805,6 +874,47 @@
 
   @media (min-width:1024px){ .stat-grid{grid-template-columns:repeat(4,1fr);} }
 
+  /* 微信读书 / 阅读报告 / 阅读计划 */
+  .weread-sync-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .weread-sync-status{font-weight:700;font-size:15px;color:var(--text);}
+  .weread-sync-meta{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+  .read-stats-row{grid-template-columns:repeat(3,1fr);}
+  @media (min-width:640px){ .read-stats-row{grid-template-columns:repeat(6,1fr);} }
+  .read-section-title{font-size:14px;font-weight:700;color:var(--text);margin:18px 0 10px;}
+  .card-sub{font-size:12px;color:var(--text-secondary);font-weight:400;margin-left:6px;}
+  .rank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .rank-item:last-child{border-bottom:none;}
+  .rank-num{width:22px;height:22px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+  .rank-num.top{background:var(--yellow);color:#6b5300;}
+  .rank-info{flex:1;min-width:0;}
+  .rank-title{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rank-meta{font-size:11px;color:var(--text-secondary);}
+  .rank-time{font-weight:700;color:var(--primary);}
+  .category-item{display:inline-flex;align-items:center;gap:6px;background:var(--primary-light);color:var(--primary);padding:6px 10px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;}
+  .read-trend-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:10px 0;}
+  .trend-bar{flex:1;background:var(--primary-soft);border-radius:6px 6px 0 0;min-height:4px;position:relative;transition:height .3s;}
+  .trend-bar:hover{background:var(--primary);}
+  .trend-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-secondary);white-space:nowrap;}
+  .trend-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text);font-weight:600;}
+  .read-dist-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .dist-pill{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;min-width:64px;}
+  .dist-label{font-size:11px;color:var(--text-secondary);}
+  .dist-num{font-size:16px;font-weight:700;color:var(--primary);}
+  .author-item{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:var(--green);padding:5px 10px;border-radius:12px;font-size:12px;margin:0 6px 6px 0;}
+  .plan-card{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .plan-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 22px;margin-top:2px;}
+  .plan-check.done{background:var(--green);border-color:var(--green);}
+  .plan-check svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none;}
+  .plan-info{flex:1;min-width:0;}
+  .plan-title{font-weight:600;color:var(--text);}
+  .plan-title.done{text-decoration:line-through;color:var(--text-secondary);}
+  .plan-meta{font-size:12px;color:var(--text-secondary);margin-top:3px;}
+  .plan-note{font-size:12px;color:var(--text-secondary);margin-top:6px;white-space:pre-wrap;word-break:break-word;}
+  .plan-actions{display:flex;gap:8px;}
+  .book-cover{width:48px;height:68px;object-fit:cover;border-radius:6px;background:var(--primary-light);flex:0 0 48px;}
+  .book-main{flex:1;min-width:0;}
+  .book-card.weread{display:flex;gap:12px;align-items:flex-start;}
+
   /* 云端同步 Token 状态 + 首次粘贴模态框 */
   .token-status{font-weight:600;color:var(--red);}
   .token-status.ok{color:var(--green);}
@@ -833,6 +943,8 @@
     GITHUB_TOKEN: ''   // 仅作兜底；正式值由用户在各端首次打开时粘贴并存入 localStorage
   };
   var TOKEN_KEY = 'wb_github_pat';
+  var WEREAD_KEY = 'wb_weread_key';
+  var WEREAD_WORKER_KEY = 'wb_weread_worker_url';
   var GITHUB_API = 'https://api.github.com';
   function contentsUrl() {
     return GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + CONFIG.DATA_FILE;
@@ -845,10 +957,29 @@
   function setToken(t) {
     try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch(e) {}
   }
+  function isTokenSet() { var t = getToken(); return !!(t && t !== 'YOUR_GITHUB_TOKEN'); }
+  function getWereadKey() { try { var k = localStorage.getItem(WEREAD_KEY); if (k) return k; } catch(e){} return ''; }
+  function setWereadKey(k) { try { if (k) localStorage.setItem(WEREAD_KEY, k); else localStorage.removeItem(WEREAD_KEY); } catch(e){} }
+  function getWereadWorkerUrl() { try { var u = localStorage.getItem(WEREAD_WORKER_KEY); if (u) return u.replace(/\/$/, ''); } catch(e){} return ''; }
+  function setWereadWorkerUrl(u) { try { if (u) localStorage.setItem(WEREAD_WORKER_KEY, u.replace(/\/$/, '')); else localStorage.removeItem(WEREAD_WORKER_KEY); } catch(e){} }
+  function isWereadKeySet() { var k = getWereadKey(); return !!(k && k.indexOf('wrk-') === 0); }
+  function fmtReadTime(seconds) {
+    if (!seconds) return '0 小时';
+    var h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60);
+    if (h && m) return h + ' 小时 ' + m + ' 分';
+    return h ? h + ' 小时' : m + ' 分钟';
+  }
+  function fmtReadDist(progress) {
+    if (progress <= 0) return '未开始';
+    if (progress < 20) return '刚开始';
+    if (progress < 50) return '阅读中';
+    if (progress < 80) return '过半';
+    if (progress < 100) return '接近读完';
+    return '已读完';
+  }
   // base64 UTF-8 安全编解码（数据含中文）
   function b64encodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
   function b64decodeUtf8(b64) { return decodeURIComponent(escape(atob(String(b64).replace(/\s/g, '')))); }
-  function isTokenSet() { var t = getToken(); return !!(t && t !== 'YOUR_GITHUB_TOKEN'); }
   var dataSha = null; // 当前 data.json 的 blob sha，写回时用于乐观并发
 
   // 生成稳定唯一 id（用于记录级更新 / 删除定位）
@@ -878,7 +1009,7 @@
   var NOTF_ = { title:'标题', content:'内容', mood:'心情', images:'配图', created:'创建日期' };
 
   var today = todayStr();
-  var state = { habits: [], records: [], todos: [], focus: [], reading: [], fitness: [], anniversaries: [], notes: [], currentSection: 'home', todoFilter: 'all', timer: { total: 25*60, left: 25*60, running: false, interval: null, selectedMin: 25, type: '工作' } };
+  var state = { habits: [], records: [], todos: [], focus: [], reading: [], fitness: [], anniversaries: [], notes: [], currentSection: 'home', todoFilter: 'all', timer: { total: 25*60, left: 25*60, running: false, interval: null, selectedMin: 25, type: '工作' }, books: [], readStats: null, notebooks: [], readingPlans: [] };
 
   function todayStr() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function pad(n) { return n < 10 ? '0'+n : ''+n; }
@@ -905,6 +1036,10 @@
     state.fitness = ensureArray(data.fitness).map(withId);
     state.anniversaries = ensureArray(data.anniversaries).map(withId);
     state.notes = ensureArray(data.notes).map(withId);
+    state.books = ensureArray(data.books).map(withId);
+    state.readStats = data.readStats || null;
+    state.notebooks = ensureArray(data.notebooks).map(withId);
+    state.readingPlans = ensureArray(data.readingPlans).map(withId);
     var s = data.settings || {};
     state.settings = {
       avatar: typeof s.avatar === 'string' ? s.avatar : '',
@@ -955,6 +1090,10 @@
       fitness: state.fitness,
       anniversaries: state.anniversaries,
       notes: state.notes,
+      books: state.books,
+      readStats: state.readStats,
+      notebooks: state.notebooks,
+      readingPlans: state.readingPlans,
       settings: state.settings
     };
     var body = {
@@ -1238,35 +1377,193 @@
   function weekStart(){ var d = new Date(); var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function monthStart(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-01'; }
 
-  // ===== 阅读 =====
-  function addReading(title, author, status, progress) {
-    var p = {}; p[RF_.title]=title; p[RF_.author]=author; p[RF_.status]=status; p[RF_.progress]=progress; p[RF_.note]=''; p[RF_.created]=today+'T00:00:00Z'; p._id=genId();
-    state.reading.push(p); return saveToRepo();
+  // ===== 微信读书同步 =====
+  function wereadFetch(apiName, params) {
+    var url = getWereadWorkerUrl();
+    var key = getWereadKey();
+    if (!url || !key) return Promise.reject(new Error('请先保存微信读书 Key 和 Worker 地址'));
+    return fetch(url + '/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify(Object.assign({ api_name: apiName, skill_version: '1.0.4' }, params || {}))
+    }).then(function(res){ return res.json(); });
   }
-  function updateReadingStatus(id) {
-    var rec = state.reading.find(function(r){ return r._id === id; }); if (!rec) return;
-    var idx = READ_STATUS_OPTIONS.indexOf(rec[RF_.status]); rec[RF_.status] = READ_STATUS_OPTIONS[(idx + 1) % READ_STATUS_OPTIONS.length];
-    if (rec[RF_.status] === '读完') rec[RF_.progress] = 100;
+  function syncWeread() {
+    if (!isWereadKeySet() || !getWereadWorkerUrl()) { toast('请先保存微信读书 Key 和 Worker 地址'); return Promise.resolve(); }
+    setSync('syncing');
+    toast('正在同步微信读书…');
+    var books = [], stats = null, notebooks = [];
+    return wereadFetch('/shelf/sync')
+      .then(function(data) {
+        books = (data && data.books) || (data && data.data && data.data.books) || [];
+        // 兼容多种可能的字段形态
+        return wereadFetch('/readdata/detail');
+      })
+      .then(function(data) {
+        stats = data && data.data ? data.data : data;
+        return wereadFetch('/user/notebooks');
+      })
+      .then(function(data) {
+        notebooks = (data && data.books) || (data && data.data && data.data.books) || [];
+        // 统一书籍结构，保留原始字段兜底
+        state.books = books.map(function(b){
+          var title = b.title || b.bookInfo && b.bookInfo.title || '未命名';
+          var author = b.author || b.bookInfo && b.bookInfo.author || '佚名';
+          var cover = b.cover || b.bookInfo && b.bookInfo.cover || '';
+          var category = b.category || b.bookInfo && b.bookInfo.category || '';
+          var progress = typeof b.readProgress === 'number' ? b.readProgress : (typeof b.progress === 'number' ? b.progress : 0);
+          var readTime = b.readTime || b.totalReadTime || 0;
+          var noteCount = typeof b.noteCount === 'number' ? b.noteCount : 0;
+          return { _id: genId(), title: title, author: author, cover: cover, category: category, progress: progress, readTime: readTime, noteCount: noteCount, status: progress >= 100 ? '读完' : progress > 0 ? '在读' : '想读', raw: b };
+        });
+        state.readStats = stats || null;
+        state.notebooks = notebooks.map(function(n){ return { _id: genId(), bookId: n.bookId || '', title: n.title || '未命名', noteCount: n.noteCount || 0, notes: n.notes || [], raw: n }; });
+        state.settings.wereadSyncedAt = new Date().toISOString();
+        return saveToRepo();
+      })
+      .then(function(){ setSync('synced'); toast('微信读书同步成功'); renderReading(); })
+      .catch(function(err){ console.error('syncWeread failed:', err); setSync('offline'); toast('同步失败：' + (err.message || '未知错误')); });
+  }
+
+  // ===== 阅读计划 =====
+  function addReadingPlan(title, due, status, note) {
+    var p = { _id: genId(), title: title, due: due || '', status: status || '未开始', note: note || '', created: today + 'T00:00:00Z' };
+    state.readingPlans.push(p); return saveToRepo();
+  }
+  function toggleReadingPlan(id) {
+    var rec = state.readingPlans.find(function(r){ return r._id === id; }); if (!rec) return Promise.resolve();
+    rec.status = rec.status === '已完成' ? '进行中' : '已完成';
     return saveToRepo();
   }
-  function deleteReading(id){ state.reading = state.reading.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+  function deleteReadingPlan(id){ state.readingPlans = state.readingPlans.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+
+  // ===== 阅读 =====
   function renderReading() {
-    var cnt = { '想读':0, '在读':0, '读完':0 };
-    state.reading.forEach(function(r){ var s = r[RF_.status]; if (cnt[s] !== undefined) cnt[s]++; });
-    setText('readWant', cnt['想读']); setText('readDoing', cnt['在读']); setText('readDone', cnt['读完']);
+    // 同步入口状态
+    var hasCfg = isWereadKeySet() && getWereadWorkerUrl();
+    var syncedAt = state.settings && state.settings.wereadSyncedAt;
+    var hasData = state.books && state.books.length > 0;
+    setText('wereadSyncStatus', hasData ? '已同步' : (hasCfg ? '可同步' : '未配置'));
+    var meta = '';
+    if (!hasCfg) meta = '首次使用请先在「设置」里保存 Key 和 Worker 地址';
+    else if (syncedAt) meta = '上次同步：' + fmtDate(syncedAt) + ' ' + (new Date(syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}));
+    else meta = '点击「立即同步」拉取微信读书数据';
+    setText('wereadSyncMeta', meta);
+    var syncBtn = document.getElementById('wereadSyncBtn');
+    if (syncBtn) syncBtn.onclick = function(){ wrapPromise(syncWeread()).then(loadAll); };
+
+    // 统计报告
+    var statsCard = document.getElementById('readStatsCard');
+    var statsEmpty = document.getElementById('readStatsEmpty');
+    if (hasData && state.readStats) {
+      statsCard.style.display = 'block'; statsEmpty.style.display = 'none';
+      var s = state.readStats;
+      setText('rsTotalTime', fmtReadTime(s.totalReadTime || s.totalTime || 0));
+      setText('rsReadDays', s.readDays || 0);
+      setText('rsBookCount', s.bookCount || state.books.length || 0);
+      setText('rsFinishedCount', s.finishedCount || state.books.filter(function(b){ return b.status === '读完'; }).length || 0);
+      setText('rsNoteCount', s.noteCount || state.notebooks.reduce(function(sum, n){ return sum + (n.noteCount || 0); }, 0));
+      setText('rsStreakDays', s.continuousDays || s.streakDays || 0);
+
+      // TOP10
+      var top10 = (s.topBooks || s.top10 || s.bookRankings || state.books.slice().sort(function(a,b){ return (b.readTime||0)-(a.readTime||0); })).slice(0, 10);
+      var top10List = document.getElementById('rsTop10List');
+      top10List.innerHTML = '';
+      if (!top10.length) top10List.innerHTML = '<div class="empty-state">暂无排行数据</div>';
+      top10.forEach(function(b, i){
+        var title = b.title || b.bookName || '未命名'; var t = b.readTime || b.totalReadTime || 0;
+        var el = document.createElement('div'); el.className = 'rank-item';
+        el.innerHTML = '<div class="rank-num ' + (i < 3 ? 'top' : '') + '">' + (i + 1) + '</div><div class="rank-info"><div class="rank-title">' + escapeHtml(title) + '</div><div class="rank-meta">' + escapeHtml(b.author || '') + '</div></div><div class="rank-time">' + fmtReadTime(t) + '</div>';
+        top10List.appendChild(el);
+      });
+
+      // 偏好分类
+      var cats = s.categories || s.categoryStats || [];
+      var catList = document.getElementById('rsCategoryList');
+      catList.innerHTML = '';
+      if (!cats.length) catList.innerHTML = '<span class="category-item">暂无分类数据</span>';
+      cats.forEach(function(c){
+        var name = c.category || c.name || '其他';
+        var pill = document.createElement('span'); pill.className = 'category-item';
+        pill.textContent = name + ' · ' + (c.count || 0) + ' 本 · ' + fmtReadTime(c.readTime || c.totalReadTime || 0);
+        catList.appendChild(pill);
+      });
+
+      // 历年趋势
+      var yearly = s.yearly || s.yearlyStats || [];
+      var trendChart = document.getElementById('rsTrendChart');
+      trendChart.innerHTML = '';
+      if (!yearly.length) {
+        trendChart.innerHTML = '<div class="empty-state">暂无历年数据</div>';
+      } else {
+        var max = Math.max.apply(null, yearly.map(function(y){ return y.readTime || y.totalReadTime || 0; })) || 1;
+        yearly.forEach(function(y){
+          var t = y.readTime || y.totalReadTime || 0; var h = Math.round((t / max) * 100);
+          var bar = document.createElement('div'); bar.className = 'trend-bar'; bar.style.height = h + '%';
+          bar.innerHTML = '<div class="trend-val">' + Math.round(t/3600) + 'h</div><div class="trend-label">' + (y.year || '') + '</div>';
+          trendChart.appendChild(bar);
+        });
+      }
+
+      // 进度分布
+      var dist = s.progressDistribution || s.progressDist || {};
+      if (!Object.keys(dist).length) {
+        dist = { '未开始':0, '刚开始':0, '阅读中':0, '过半':0, '接近读完':0, '已读完':0 };
+        state.books.forEach(function(b){ dist[fmtReadDist(b.progress || 0)]++; });
+      }
+      var distRow = document.getElementById('rsDistRow');
+      distRow.innerHTML = '';
+      Object.keys(dist).forEach(function(k){
+        var pill = document.createElement('div'); pill.className = 'dist-pill';
+        pill.innerHTML = '<div class="dist-label">' + escapeHtml(k) + '</div><div class="dist-num">' + (dist[k] || 0) + '</div>';
+        distRow.appendChild(pill);
+      });
+
+      // 作者统计
+      var authors = s.authors || s.authorStats || [];
+      var authorList = document.getElementById('rsAuthorList');
+      authorList.innerHTML = '';
+      if (!authors.length) authorList.innerHTML = '<span class="empty-state">暂无作者数据</span>';
+      authors.slice(0, 20).forEach(function(a){
+        var name = a.author || a.name || '佚名'; var count = a.count || a.bookCount || 0;
+        var pill = document.createElement('span'); pill.className = 'author-item';
+        pill.textContent = name + ' · ' + count + ' 本';
+        authorList.appendChild(pill);
+      });
+    } else {
+      statsCard.style.display = 'none'; statsEmpty.style.display = 'block';
+    }
+
+    // 书架
+    setText('bookshelfCount', state.books.length + ' 本');
     var list = document.getElementById('readingList'); list.innerHTML = '';
-    document.getElementById('readingEmpty').style.display = state.reading.length ? 'none' : 'block';
-    state.reading.slice().sort(function(a,b){ return (b[RF_.created]||'').localeCompare(a[RF_.created]||''); }).forEach(function(r){
-      var st = r[RF_.status];
-      var stClass = st === '想读' ? 'status-want' : st === '在读' ? 'status-doing' : 'status-done';
-      var el = document.createElement('div'); el.className = 'book-card';
-      el.innerHTML = '<div class="book-head"><div class="book-title">' + escapeHtml(r[RF_.title]) + '</div><span class="tag ' + stClass + '">' + escapeHtml(st) + '</span></div>'
-        + '<div class="book-meta">' + escapeHtml(r[RF_.author] || '佚名') + '</div>'
-        + '<div class="progress-bar"><div class="progress-fill" style="width:' + (r[RF_.progress] || 0) + '%"></div></div>'
-        + '<div class="book-actions"><button class="btn btn-small btn-soft act-status">改状态</button><button class="btn btn-small btn-danger act-del">删除</button></div>';
-      el.querySelector('.act-status').onclick = function(){ wrapPromise(updateReadingStatus(r._id)).then(loadAll); };
-      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteReading(r._id)).then(loadAll); };
+    document.getElementById('readingEmpty').style.display = state.books.length ? 'none' : 'block';
+    state.books.slice().sort(function(a,b){ return (b.readTime || 0) - (a.readTime || 0); }).forEach(function(b){
+      var stClass = b.status === '想读' ? 'status-want' : b.status === '在读' ? 'status-doing' : 'status-done';
+      var coverHtml = b.cover ? '<img class="book-cover" src="' + escapeHtml(b.cover) + '" alt="">' : '<div class="book-cover"></div>';
+      var el = document.createElement('div'); el.className = 'book-card weread';
+      el.innerHTML = coverHtml + '<div class="book-main"><div class="book-head"><div class="book-title">' + escapeHtml(b.title) + '</div><span class="tag ' + stClass + '">' + escapeHtml(b.status) + '</span></div>'
+        + '<div class="book-meta">' + escapeHtml(b.author || '佚名') + (b.category ? ' · ' + escapeHtml(b.category) : '') + ' · 笔记 ' + (b.noteCount || 0) + '</div>'
+        + '<div class="progress-bar"><div class="progress-fill" style="width:' + (b.progress || 0) + '%"></div></div>'
+        + '</div>';
       list.appendChild(el);
+    });
+
+    // 阅读计划
+    var planList = document.getElementById('readingPlanList'); planList.innerHTML = '';
+    document.getElementById('readingPlanEmpty').style.display = state.readingPlans.length ? 'none' : 'block';
+    state.readingPlans.slice().sort(function(a,b){ return (b.created || '').localeCompare(a.created || ''); }).forEach(function(p){
+      var matched = state.books.find(function(b){ return b.title === p.title; });
+      var done = p.status === '已完成';
+      var el = document.createElement('div'); el.className = 'plan-card';
+      el.innerHTML = '<div class="plan-check ' + (done ? 'done' : '') + '">' + (done ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</div>'
+        + '<div class="plan-info"><div class="plan-title ' + (done ? 'done' : '') + '">' + escapeHtml(p.title) + '</div>'
+        + '<div class="plan-meta">' + (p.due ? ('截止 ' + p.due) : '无截止日期') + (matched ? ' · 已在书架 · ' + (matched.status === '读完' ? '已读完' : '进度 ' + (matched.progress || 0) + '%') : '') + '</div>'
+        + (p.note ? '<div class="plan-note">' + escapeHtml(p.note) + '</div>' : '') + '</div>'
+        + '<div class="plan-actions"><button class="btn btn-small btn-danger act-del">删除</button></div>';
+      el.querySelector('.plan-check').onclick = function(){ wrapPromise(toggleReadingPlan(p._id)).then(loadAll); };
+      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteReadingPlan(p._id)).then(loadAll); };
+      planList.appendChild(el);
     });
   }
 
@@ -1374,7 +1671,7 @@
       { n: state.records.filter(function(r){ return r[HR.done]; }).length, l: '累计打卡' },
       { n: state.todos.length, l: '待办' },
       { n: state.focus.reduce(function(s,r){ return s + (r[FF.minutes] || 0); }, 0), l: '专注(分)' },
-      { n: state.reading.length, l: '书籍' },
+      { n: state.books.length, l: '书籍' },
       { n: state.fitness.length, l: '训练' },
       { n: state.anniversaries.length, l: '纪念日' },
       { n: state.notes.length, l: '随笔' }
@@ -1390,7 +1687,7 @@
     setBar('barFocus', 'valFocus', focusTotal, maxV);
     setBar('barStreak', 'valStreak', streak, maxV);
     var rc = { '想读':0, '在读':0, '读完':0 };
-    state.reading.forEach(function(r){ if (rc[r[RF_.status]] !== undefined) rc[r[RF_.status]]++; });
+    state.books.forEach(function(r){ if (rc[r.status] !== undefined) rc[r.status]++; });
     var rmax = Math.max(rc['想读'], rc['在读'], rc['读完'], 1);
     setBar('barWant', 'valWant', rc['想读'], rmax);
     setBar('barDoing', 'valDoing', rc['在读'], rmax);
@@ -1473,9 +1770,9 @@
     document.querySelector('input[name="fDate"]').value = today;
     document.querySelector('input[name="aDate"]').value = today;
 
-    document.getElementById('addReadingForm').onsubmit = function(e){
+    document.getElementById('addReadingPlanForm').onsubmit = function(e){
       e.preventDefault(); var f = e.target;
-      wrapPromise(addReading(f.rTitle.value.trim(), f.rAuthor.value.trim(), f.rStatus.value, parseInt(f.rProgress.value || '0', 10))).then(function(){ f.reset(); loadAll(); });
+      wrapPromise(addReadingPlan(f.rpTitle.value.trim(), f.rpDue.value, f.rpStatus.value, f.rpNote.value.trim())).then(function(){ f.reset(); loadAll(); });
     };
 
     var fitImgPrev = document.getElementById('fitImgPrev');
@@ -1620,6 +1917,14 @@
     }
     var ts = document.getElementById('tokenStatus');
     if (ts) { var tk = getToken(); ts.textContent = tk ? ('已设置（尾号 ' + tk.slice(-4) + '）') : '未设置'; ts.classList.toggle('ok', !!tk); }
+    var ws = document.getElementById('wereadStatus');
+    if (ws) {
+      var wk = getWereadKey(), wu = getWereadWorkerUrl();
+      if (wk && wu) { ws.textContent = '已设置（Key 尾号 ' + wk.slice(-4) + '）'; ws.classList.add('ok'); }
+      else if (wk) { ws.textContent = '已填 Key，缺少 Worker 地址'; ws.classList.remove('ok'); }
+      else if (wu) { ws.textContent = '已填 Worker 地址，缺少 Key'; ws.classList.remove('ok'); }
+      else { ws.textContent = '未设置'; ws.classList.remove('ok'); }
+    }
   }
 
   function moveModule(idx, dir) {
@@ -1669,6 +1974,19 @@
     if (stb) stb.onclick = function(){ var v = (document.getElementById('tokenInput').value || '').trim(); if (!v) { toast('请先粘贴 Token'); return; } setToken(v); document.getElementById('tokenInput').value=''; renderSettings(); toast('Token 已保存到本机'); };
     var ctb = document.getElementById('clearTokenBtn');
     if (ctb) ctb.onclick = function(){ if (!confirm('确定清除本机 Token？清除后需重新粘贴才能同步。')) return; setToken(''); renderSettings(); toast('已清除本机 Token'); };
+
+    var swb = document.getElementById('saveWereadBtn');
+    if (swb) swb.onclick = function(){
+      var k = (document.getElementById('wereadKeyInput').value || '').trim();
+      var u = (document.getElementById('wereadWorkerInput').value || '').trim();
+      if (!k && !u) { toast('请至少填写 Key 或 Worker 地址'); return; }
+      if (k) setWereadKey(k);
+      if (u) setWereadWorkerUrl(u);
+      document.getElementById('wereadKeyInput').value = ''; document.getElementById('wereadWorkerInput').value = '';
+      renderSettings(); toast('微信读书配置已保存到本机');
+    };
+    var cwb = document.getElementById('clearWereadBtn');
+    if (cwb) cwb.onclick = function(){ if (!confirm('确定清除本机微信读书配置？')) return; setWereadKey(''); setWereadWorkerUrl(''); renderSettings(); renderReading(); toast('已清除微信读书配置'); };
   }
 
   function clearAllData() {
@@ -1677,6 +1995,7 @@
     showSpinner(true);
     state.habits = []; state.records = []; state.todos = []; state.focus = [];
     state.reading = []; state.fitness = []; state.anniversaries = []; state.notes = [];
+    state.books = []; state.readStats = null; state.notebooks = []; state.readingPlans = [];
     saveToRepo()
       .then(function(){ toast('已清空全部数据'); loadAll(); })
       .catch(function(){ showSpinner(false); toast('清空失败，请重试'); });
