@@ -570,6 +570,23 @@
         </div>
 
         <div class="card">
+          <div class="card-title">云端同步 Token</div>
+          <p class="card-hint">PAT 仅保存在本机浏览器（localStorage），不写入公开源码。换设备 / 换浏览器需重新粘贴一次。请使用仅授权本仓库 <code>Contents: Read and Write</code> 的 fine-grained PAT。</p>
+          <div class="form-row">
+            <label>当前状态</label>
+            <span id="tokenStatus" class="token-status">未设置</span>
+          </div>
+          <div class="form-row">
+            <label>Token</label>
+            <input class="form-input" id="tokenInput" type="password" placeholder="粘贴 github_pat_xxx" autocomplete="off">
+            <button class="btn btn-primary btn-small" id="saveTokenBtn">保存</button>
+          </div>
+          <div class="form-row">
+            <button class="btn btn-small btn-danger" id="clearTokenBtn">清除本机 Token</button>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-title">数据管理</div>
           <p class="card-hint">清空将删除全部打卡、待办、专注、阅读、健身、纪念日与随笔数据，不可恢复。</p>
           <button class="btn btn-danger" id="clearDataBtn">一键清空全部数据</button>
@@ -795,6 +812,17 @@
   .tag.status-done{background:rgba(255,199,64,0.18);color:var(--yellow);}
 
   @media (min-width:1024px){ .stat-grid{grid-template-columns:repeat(4,1fr);} }
+
+  /* 云端同步 Token 状态 + 首次粘贴模态框 */
+  .token-status{font-weight:600;color:var(--red);}
+  .token-status.ok{color:var(--green);}
+  #tokenOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:rgba(8,10,16,0.82);backdrop-filter:blur(4px);padding:20px;}
+  .token-box{width:100%;max-width:460px;background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .token-box-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;}
+  .token-box-hint{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 6px;}
+  .token-box-err{color:var(--red);font-size:13px;min-height:18px;margin:8px 0 0;}
 </style>
 
 <script>
@@ -802,23 +830,33 @@
   'use strict';
 
   // ===== GitHub 仓库配置（单仓库托管：workspace.html + data.json 经 GitHub Pages 发布）=====
-  // 请由主理人把 GITHUB_TOKEN 替换为真实 fine-grained PAT（仅授权本仓库 Contents: Read and Write）。
   // OWNER / REPO / BRANCH 已固定为当前部署仓库；改名需同步改 GitHub Pages 基址与 manifest 的 start_url。
+  // 安全说明：公开仓库部署，PAT 绝不明文写进源码（会被 secret scanning 拦截且任何人可读源码即获写权限）。
+  // 改为「按设备存 localStorage」：首次打开弹窗粘贴，仅本机本浏览器可用，源码零明文 token。
   var CONFIG = {
     OWNER: 'yizhigee',
     REPO: 'work',
     BRANCH: 'main',
     DATA_FILE: 'data.json',
-    GITHUB_TOKEN: 'YOUR_GITHUB_TOKEN'
+    GITHUB_TOKEN: ''   // 仅作兜底；正式值由用户在各端首次打开时粘贴并存入 localStorage
   };
+  var TOKEN_KEY = 'wb_github_pat';
   var GITHUB_API = 'https://api.github.com';
   function contentsUrl() {
     return GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + CONFIG.DATA_FILE;
   }
+  // 读取 token：优先 localStorage（各端各自粘贴），兜底 CONFIG 占位（通常为空）
+  function getToken() {
+    try { var t = localStorage.getItem(TOKEN_KEY); if (t) return t; } catch(e) {}
+    return CONFIG.GITHUB_TOKEN || '';
+  }
+  function setToken(t) {
+    try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch(e) {}
+  }
   // base64 UTF-8 安全编解码（数据含中文）
   function b64encodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
   function b64decodeUtf8(b64) { return decodeURIComponent(escape(atob(String(b64).replace(/\s/g, '')))); }
-  function isTokenSet() { return !!CONFIG.GITHUB_TOKEN && CONFIG.GITHUB_TOKEN !== 'YOUR_GITHUB_TOKEN'; }
+  function isTokenSet() { var t = getToken(); return !!(t && t !== 'YOUR_GITHUB_TOKEN'); }
   var dataSha = null; // 当前 data.json 的 blob sha，写回时用于乐观并发
 
   // 生成稳定唯一 id（用于记录级更新 / 删除定位）
@@ -890,7 +928,7 @@
     setSync('syncing');
     var url = contentsUrl() + '?ref=' + CONFIG.BRANCH;
     var headers = { 'Accept': 'application/vnd.github+json' };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
     return fetch(url, { headers: headers })
       .then(function(res){
         if (res.status === 404) { dataSha = null; applyState({}); setSync('synced'); return; }
@@ -937,7 +975,7 @@
       'Accept': 'application/vnd.github+json',
       'Content-Type': 'application/json'
     };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
     return fetch(contentsUrl(), { method: 'PUT', headers: headers, body: JSON.stringify(body) })
       .then(function(res){
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1185,7 +1223,7 @@
       var name = 'images/' + ts.getFullYear() + pad(ts.getMonth()+1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds()) + '-' + Math.random().toString(36).slice(2,6) + '.jpg';
       var body = { message: 'add image ' + name, content: b64, branch: CONFIG.BRANCH };
       var headers = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
-      if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+      if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
       return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + name, { method:'PUT', headers: headers, body: JSON.stringify(body) })
         .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return name; });
     });
@@ -1193,13 +1231,13 @@
   function deleteImageFromRepo(path) {
     if (!path) return Promise.resolve();
     var headers = { 'Accept':'application/vnd.github+json' };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
     return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path + '?ref=' + CONFIG.BRANCH, { headers: headers })
       .then(function(res){ if (!res.ok) return null; return res.json(); })
       .then(function(file){
         if (!file || !file.sha) return null;
         var delHeaders = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
-        if (isTokenSet()) delHeaders['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+        if (isTokenSet()) delHeaders['Authorization'] = 'Bearer ' + getToken();
         return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path, { method:'DELETE', headers: delHeaders, body: JSON.stringify({ message:'del image ' + path, sha: file.sha, branch: CONFIG.BRANCH }) });
       });
   }
@@ -1597,6 +1635,8 @@
         fs.appendChild(chip);
       });
     }
+    var ts = document.getElementById('tokenStatus');
+    if (ts) { var tk = getToken(); ts.textContent = tk ? ('已设置（尾号 ' + tk.slice(-4) + '）') : '未设置'; ts.classList.toggle('ok', !!tk); }
   }
 
   function moveModule(idx, dir) {
@@ -1642,6 +1682,10 @@
     if (ss) ss.onclick = function(){ state.settings.sign = (document.getElementById('signatureInput').value || '').trim(); saveSettings().then(function(){ renderGreeting(); toast('签名已保存'); }); };
     var cd = document.getElementById('clearDataBtn');
     if (cd) cd.onclick = clearAllData;
+    var stb = document.getElementById('saveTokenBtn');
+    if (stb) stb.onclick = function(){ var v = (document.getElementById('tokenInput').value || '').trim(); if (!v) { toast('请先粘贴 Token'); return; } setToken(v); document.getElementById('tokenInput').value=''; renderSettings(); toast('Token 已保存到本机'); };
+    var ctb = document.getElementById('clearTokenBtn');
+    if (ctb) ctb.onclick = function(){ if (!confirm('确定清除本机 Token？清除后需重新粘贴才能同步。')) return; setToken(''); renderSettings(); toast('已清除本机 Token'); };
   }
 
   function clearAllData() {
@@ -1663,9 +1707,40 @@
   setupBackup();
   setupSettings();
   renderNav();
-  loadSettings().then(function(){ return loadAll(); })
-    .then(function(){ applySettings(); renderSettings(); renderGreeting(); initTimer(); })
-    .catch(function(){ initTimer(); });
+
+  // 首次打开（本机无 token）弹窗粘贴；已设置则直接进入
+  function showTokenModal() {
+    return new Promise(function(resolve){
+      var overlay = document.createElement('div');
+      overlay.id = 'tokenOverlay';
+      overlay.innerHTML = '<div class="token-box">' +
+        '<div class="token-box-title">设置云端同步 Token</div>' +
+        '<p class="token-box-hint">这是公开仓库部署，源码不含 Token。请把「仅授权 yizhigee/work 的 Contents: Read and Write」的 fine-grained PAT 粘贴到下方。它只会保存在你当前这台设备的浏览器里，换设备 / 换浏览器需重新粘贴一次。</p>' +
+        '<input id="tokenModalInput" class="form-input" type="password" placeholder="github_pat_xxx" autocomplete="off" style="width:100%;margin:12px 0;">' +
+        '<button id="tokenModalSave" class="btn btn-primary" style="width:100%;">保存并进入</button>' +
+        '<p class="token-box-err" id="tokenModalErr"></p>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      function close(){ if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
+      function save(){
+        var v = (document.getElementById('tokenModalInput').value || '').trim();
+        if (!v) { document.getElementById('tokenModalErr').textContent = '请输入 Token'; return; }
+        setToken(v); close(); resolve();
+      }
+      document.getElementById('tokenModalSave').onclick = save;
+      var inp = document.getElementById('tokenModalInput');
+      inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); });
+      setTimeout(function(){ inp.focus(); }, 60);
+    });
+  }
+
+  function boot() {
+    loadSettings().then(function(){ return loadAll(); })
+      .then(function(){ applySettings(); renderSettings(); renderGreeting(); initTimer(); })
+      .catch(function(){ initTimer(); });
+  }
+  if (isTokenSet()) { boot(); }
+  else { showTokenModal().then(boot); }
 })();
 </script>
 </body>
