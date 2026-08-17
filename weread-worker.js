@@ -37,7 +37,11 @@ function checkGate(request, env) {
 
 function ghHeaders(env, extra) {
   return Object.assign(
-    { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + (env.GITHUB_PAT || '') },
+    {
+      'Accept': 'application/vnd.github+json',
+      'Authorization': 'Bearer ' + (env.GITHUB_PAT || ''),
+      'User-Agent': 'weread-proxy/1.0',
+    },
     extra || {}
   );
 }
