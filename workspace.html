@@ -69,11 +69,6 @@
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
   .sync-dot.offline { background: var(--red); }
   .sync-dot.syncing { background: var(--yellow); }
-  .icon-btn {
-    width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--card);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: var(--shadow); color: var(--text-secondary); cursor: pointer;
-  }
   .card {
     background: var(--card); border-radius: 18px; padding: 18px;
     box-shadow: var(--shadow); margin-bottom: 14px;
@@ -300,9 +295,6 @@
     </div>
     <div class="top-actions">
       <div class="sync-status" id="syncStatus"><span class="sync-dot" id="syncDot"></span><span id="syncText">已同步</span></div>
-      <button class="icon-btn" id="backupBtn" title="导出 JSON 备份">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      </button>
     </div>
   </header>
 
@@ -1537,15 +1529,6 @@
     };
   }
 
-  function setupBackup() {
-    document.getElementById('backupBtn').onclick = function(){
-      var data = { habits: state.habits, records: state.records, todos: state.todos, focus: state.focus, reading: state.reading, fitness: state.fitness, anniversaries: state.anniversaries, notes: state.notes, exportedAt: new Date().toISOString() };
-      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '工作台备份_' + today + '.json'; a.click();
-      toast('备份已下载');
-    };
-  }
-
   // ===== 用户设置（云表） =====
   var SET_F = { avatar:'头像', nick:'昵称', sign:'签名', order:'模块顺序', focus:'番茄默认' };
   var MODULES = {
@@ -1704,7 +1687,6 @@
   populateSelects();
   setupForms();
   setupNav();
-  setupBackup();
   setupSettings();
   renderNav();
 
