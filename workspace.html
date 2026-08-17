@@ -612,19 +612,28 @@
           <h2 class="section-title">阅读</h2>
         </div>
 
-        <!-- 微信读书同步入口 -->
+        <!-- 同步状态条（常驻 Tab 上方） -->
         <div class="card weread-sync-card">
-          <div class="card-title">微信读书同步</div>
-          <div class="weread-sync-row">
+          <div class="weread-sync-bar">
             <div>
               <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
               <div class="weread-sync-meta" id="wereadSyncMeta">首次使用请先在「设置」里保存 Key 和 Worker 地址</div>
             </div>
-            <button class="btn btn-primary" id="wereadSyncBtn">立即同步</button>
+            <button class="btn btn-primary btn-small" id="wereadSyncBtn">立即同步</button>
           </div>
         </div>
 
-        <!-- 阅读统计报告 -->
+        <!-- Tab 切换 -->
+        <div class="reading-tabs">
+          <div class="reading-tab-list" role="tablist">
+            <button class="reading-tab active" data-tab="report" role="tab" aria-selected="true">报告</button>
+            <button class="reading-tab" data-tab="bookshelf" role="tab" aria-selected="false">书架</button>
+            <button class="reading-tab" data-tab="plan" role="tab" aria-selected="false">计划</button>
+          </div>
+        </div>
+
+        <!-- 报告面板 -->
+        <div class="reading-panel active" id="tab-report" role="tabpanel">
         <div class="read-report-card" id="readStatsCard" style="display:none;">
           <div class="rr-header">
             <div class="rr-year" id="rsYear">2026</div>
@@ -702,39 +711,51 @@
         <div class="card" id="readStatsEmpty">
           <div class="empty-state">暂无微信读书数据，配置好 Key 后点击上方「立即同步」即可生成你的专属阅读报告。</div>
         </div>
-
-        <!-- 我的书架 -->
-        <div class="card">
-          <div class="card-title">我的书架 <span class="card-sub" id="bookshelfCount">0 本</span></div>
-          <div id="readingList"></div>
-          <div class="empty-state" id="readingEmpty">书架空空如也，同步微信读书后会显示在这里。</div>
         </div>
 
-        <!-- 阅读计划 -->
-        <div class="card">
-          <div class="card-title">阅读计划</div>
-          <form id="addReadingPlanForm">
-            <div class="form-row">
-              <input type="text" name="rpTitle" placeholder="书名" required class="flex-1">
-              <input type="date" name="rpDue" class="flex-1">
+        <!-- 书架面板 -->
+        <div class="reading-panel" id="tab-bookshelf" role="tabpanel">
+          <div class="card">
+            <div class="card-title">我的书架 <span class="card-sub" id="bookshelfCount">0 本</span></div>
+            <div class="bookshelf-filters" id="bookshelfFilters">
+              <button class="bookshelf-filter active" data-filter="all">全部</button>
+              <button class="bookshelf-filter" data-filter="想读">想读</button>
+              <button class="bookshelf-filter" data-filter="在读">在读</button>
+              <button class="bookshelf-filter" data-filter="读完">读完</button>
             </div>
-            <div class="form-row">
-              <select name="rpStatus" class="flex-1">
-                <option value="未开始">未开始</option>
-                <option value="进行中">进行中</option>
-                <option value="已完成">已完成</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <textarea name="rpNote" placeholder="备注（可选）" rows="2" class="flex-1"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary full-width">添加计划</button>
-          </form>
+            <div class="bookshelf-summary" id="bookshelfSummary"></div>
+            <div class="bookshelf-grid" id="bookshelfGrid"></div>
+            <div class="empty-state" id="readingEmpty">书架空空如也，同步微信读书后会显示在这里。</div>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-title">计划列表</div>
-          <div id="readingPlanList"></div>
-          <div class="empty-state" id="readingPlanEmpty">还没有阅读计划，添加一个吧～</div>
+
+        <!-- 计划面板 -->
+        <div class="reading-panel" id="tab-plan" role="tabpanel">
+          <div class="card">
+            <div class="card-title">阅读计划</div>
+            <form id="addReadingPlanForm">
+              <div class="rp-form-row">
+                <input type="text" name="rpTitle" class="rp-input" placeholder="书名" required>
+                <input type="date" name="rpDue" class="rp-input">
+              </div>
+              <div class="rp-form-row">
+                <select name="rpStatus" class="rp-select">
+                  <option value="未开始">未开始</option>
+                  <option value="进行中">进行中</option>
+                  <option value="已完成">已完成</option>
+                </select>
+              </div>
+              <div class="rp-form-row">
+                <textarea name="rpNote" class="rp-textarea" placeholder="备注（可选）" rows="2"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary rp-submit">添加计划</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-title">计划列表</div>
+            <div id="readingPlanList"></div>
+            <div class="empty-state" id="readingPlanEmpty">还没有阅读计划，添加一个吧～</div>
+          </div>
         </div>
       </section>
 
@@ -1095,6 +1116,150 @@
   .token-box-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;}
   .token-box-hint{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 6px;}
   .token-box-err{color:var(--red);font-size:13px;min-height:18px;margin:8px 0 0;}
+
+  /* ===== 阅读模块 Tab ===== */
+  .reading-tabs { margin-bottom: 16px; }
+  .reading-tab-list {
+    display: inline-flex;
+    gap: 6px;
+    background: var(--primary-light);
+    border-radius: 14px;
+    padding: 5px;
+  }
+  .reading-tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .reading-tab:hover { color: var(--primary); }
+  .reading-tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(139,125,192,.25);
+  }
+  .reading-panel { display: none; }
+  .reading-panel.active { display: block; animation: readingFadeIn .25s ease; }
+  @keyframes readingFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 同步状态条 */
+  .weread-sync-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  /* ===== 书架筛选 pills ===== */
+  .bookshelf-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .bookshelf-filter {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .bookshelf-filter.active { background: var(--primary); color: #fff; }
+  .bookshelf-summary { font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; }
+
+  /* ===== 书架网格 ===== */
+  .bookshelf-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 14px;
+  }
+  @media (min-width: 640px) { .bookshelf-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .bookshelf-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  /* ===== 书籍卡片 V2（微信读书风格） ===== */
+  .book-card-v2 {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .book-card-v2:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .book-cover-v2 {
+    width: 56px; height: 78px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--primary-light);
+    flex: 0 0 56px;
+  }
+  .book-body-v2 { flex: 1; min-width: 0; }
+  .book-title-v2 {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .book-author-v2 {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .book-progress-v2 { margin-top: 10px; }
+  .book-progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .book-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+  .book-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+  }
+  .book-tag-v2 {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-top: 8px;
+  }
+  .book-tag-v2.want { background: var(--yellow-bg); color: var(--yellow); }
+  .book-tag-v2.reading { background: var(--primary-light); color: var(--primary); }
+  .book-tag-v2.done { background: var(--green-bg); color: var(--green); }
+
+  /* ===== 阅读计划表单（对齐参考图） ===== */
+  .rp-form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .rp-form-row .rp-input { flex: 1; min-width: 140px; }
+  .rp-input, .rp-select, .rp-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    box-sizing: border-box;
+  }
+  .rp-input:focus, .rp-select:focus, .rp-textarea:focus { border-color: var(--primary-soft); }
+  .rp-textarea { resize: vertical; min-height: 76px; }
+  .rp-submit { width: 100%; margin-top: 4px; }
 </style>
 
 <script>
@@ -1748,19 +1913,7 @@
     }
 
     // 书架
-    setText('bookshelfCount', state.books.length + ' 本');
-    var list = document.getElementById('readingList'); list.innerHTML = '';
-    document.getElementById('readingEmpty').style.display = state.books.length ? 'none' : 'block';
-    state.books.slice().sort(function(a,b){ return (b.readTime || 0) - (a.readTime || 0); }).forEach(function(b){
-      var stClass = b.status === '想读' ? 'status-want' : b.status === '在读' ? 'status-doing' : 'status-done';
-      var coverHtml = b.cover ? '<img class="book-cover" src="' + escapeHtml(b.cover) + '" alt="">' : '<div class="book-cover"></div>';
-      var el = document.createElement('div'); el.className = 'book-card weread';
-      el.innerHTML = coverHtml + '<div class="book-main"><div class="book-head"><div class="book-title">' + escapeHtml(b.title) + '</div><span class="tag ' + stClass + '">' + escapeHtml(b.status) + '</span></div>'
-        + '<div class="book-meta">' + escapeHtml(b.author || '佚名') + (b.category ? ' · ' + escapeHtml(b.category) : '') + ' · 笔记 ' + (b.noteCount || 0) + '</div>'
-        + '<div class="progress-bar"><div class="progress-fill" style="width:' + (b.progress || 0) + '%"></div></div>'
-        + '</div>';
-      list.appendChild(el);
-    });
+    renderBookshelf();
 
     // 阅读计划
     var planList = document.getElementById('readingPlanList'); planList.innerHTML = '';
@@ -1777,6 +1930,67 @@
       el.querySelector('.plan-check').onclick = function(){ wrapPromise(toggleReadingPlan(p._id)).then(loadAll); };
       el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteReadingPlan(p._id)).then(loadAll); };
       planList.appendChild(el);
+    });
+  }
+
+  function renderBookshelf() {
+    var books = state.books.slice().sort(function(a,b){ return (b.readTime || 0) - (a.readTime || 0); });
+    var activeFilter = 'all';
+    var af = document.querySelector('.bookshelf-filter.active');
+    if (af) activeFilter = af.dataset.filter;
+    if (activeFilter !== 'all') books = books.filter(function(b){ return b.status === activeFilter; });
+    setText('bookshelfCount', state.books.length + ' 本');
+    var done = state.books.filter(function(b){ return b.status === '读完'; }).length;
+    var reading = state.books.filter(function(b){ return b.status === '在读'; }).length;
+    var want = state.books.filter(function(b){ return b.status === '想读'; }).length;
+    setText('bookshelfSummary', '已读完 ' + done + ' · 在读 ' + reading + ' · 想读 ' + want);
+    var grid = document.getElementById('bookshelfGrid'); grid.innerHTML = '';
+    document.getElementById('readingEmpty').style.display = books.length ? 'none' : 'block';
+    books.forEach(function(b){
+      var stClass = b.status === '想读' ? 'want' : b.status === '在读' ? 'reading' : 'done';
+      var coverHtml = b.cover ? '<img class="book-cover-v2" src="' + escapeHtml(b.cover) + '" alt="">' : '<div class="book-cover-v2"></div>';
+      var el = document.createElement('div'); el.className = 'book-card-v2';
+      el.innerHTML = coverHtml + '<div class="book-body-v2">'
+        + '<div class="book-title-v2" title="' + escapeHtml(b.title) + '">' + escapeHtml(b.title) + '</div>'
+        + '<div class="book-author-v2">' + escapeHtml(b.author || '佚名') + (b.category ? ' · ' + escapeHtml(b.category) : '') + ' · 笔记 ' + (b.noteCount || 0) + '</div>'
+        + '<div class="book-progress-v2"><div class="book-progress-track"><div class="book-progress-fill" style="width:' + (b.progress || 0) + '%"></div></div>'
+        + '<div class="book-progress-meta"><span>' + escapeHtml(b.status) + '</span><span>' + (b.progress || 0) + '%</span></div></div>'
+        + '<span class="book-tag-v2 ' + stClass + '">' + escapeHtml(b.status) + '</span>'
+        + '</div>';
+      grid.appendChild(el);
+    });
+  }
+
+  function initReadingTabs() {
+    var tabs = document.querySelectorAll('.reading-tab');
+    var panels = document.querySelectorAll('.reading-panel');
+    tabs.forEach(function(tab){
+      tab.addEventListener('click', function(){
+        var target = tab.dataset.tab;
+        tabs.forEach(function(t){ t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+        panels.forEach(function(p){ p.classList.remove('active'); });
+        tab.classList.add('active'); tab.setAttribute('aria-selected','true');
+        var panel = document.getElementById('tab-' + target);
+        if (panel) panel.classList.add('active');
+        try { localStorage.setItem('wb_reading_active_tab', target); } catch(e){}
+      });
+    });
+    try {
+      var last = localStorage.getItem('wb_reading_active_tab');
+      if (last) {
+        var t = document.querySelector('.reading-tab[data-tab="' + last + '"]');
+        if (t) t.click();
+      }
+    } catch(e){}
+  }
+
+  function initBookshelfFilters() {
+    document.querySelectorAll('.bookshelf-filter').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.bookshelf-filter').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        renderBookshelf();
+      });
     });
   }
 
@@ -2220,6 +2434,8 @@
   setupForms();
   setupNav();
   setupSettings();
+  initReadingTabs();
+  initBookshelfFilters();
   renderNav();
 
   // 首次打开（本机无 token）弹窗粘贴；已设置则直接进入
