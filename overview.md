@@ -16,7 +16,7 @@
 | 待办 | ✅ 已上线 | 增删改查、状态 / 优先级 / 标签 / 截止 |
 | 番茄钟 | ✅ 已上线 | 计时 + 专注记录 |
 | 设置 | ✅ 已上线 | 昵称 / 签名 / 模块顺序 / 番茄默认 / 清空 |
-| 阅读 | ✅ 已上线 | 书单 / 进度 / 笔记 |
+| 阅读 | ✅ 已上线 | 微信读书同步书架 + 阅读计划 + 阅读报告 |
 | 健身 | ✅ 已上线 | 训练计划 / 记录（可能含对比图） |
 | 纪念日 | ✅ 已上线 | 日期提醒 |
 | 随笔 | ✅ 已上线 | 短笔记（可能含配图） |
@@ -27,23 +27,25 @@
 - **单一 GitHub 仓库 + GitHub Pages，无后端服务器。**
 - 仓库内容：
   - `workspace.html`：单文件前端应用（内联 CSS/JS/SVG，零外部依赖）。
-  - `data.json`：结构化数据（习惯 / 打卡 / 待办 / 番茄 / 设置 / 各模块 key）。
+  - `data.json`：结构化数据（习惯 / 打卡 / 待办 / 番茄 / 设置 / 各模块 key / 微信读书同步数据）。
   - `images/`：图片资源（健身对比、随笔配图等），由 Pages 静态托管。
   - `posts/`：博文独立文件（未来博客模块）。
-- **鉴权**：fine-grained PAT，**仅授权本仓库**的 `Contents: Read and Write`，由用户在首次打开时粘贴并存入本机浏览器 localStorage（源码不含明文 token）。
+  - `weread-worker.js`：微信读书 API 的 CORS 中转 Worker（可选，仅在使用微信读书同步时部署到 Cloudflare）。
+- **GitHub 鉴权**：fine-grained PAT，**仅授权本仓库**的 `Contents: Read and Write`，由用户在首次打开时粘贴并存入本机浏览器 localStorage（源码不含明文 token）。
+- **微信读书鉴权**：微信读书 Skill API Key 同样只存本机浏览器 localStorage；因微信读书网关不允许 GitHub Pages 域名跨域，需通过一个免费的 Cloudflare Worker 做透明中转（Worker 不存 Key）。
 - 读取数据优先走同源静态 `fetch`（无需 PAT、无限流）；写入走 GitHub Contents API（需 PAT）。
 
 ## 4. 选型对照（否决项）
 - 不用 WorkBuddy 资料库：移动端删改需微信授权、有登录摩擦 → 否决。
 - 不用纯 Gist：单文件 1 MB 上限且存图困难 → 否决，统一进仓库。
-- 不用 Cloudflare Worker / 自架服务器：免费场景不解决安全-零登录矛盾，且增维护成本 → 否决。
+- 不用 Cloudflare Worker / 自架服务器做核心业务：免费场景不解决安全-零登录矛盾，且增维护成本 → 否决；仅允许用作微信读书等第三方 API 的 CORS 透明中转（绕不过浏览器安全限制）。
 - 不用外部图床：引入第三方依赖与 ToS 风险 → 仅在「坚决不扩 PAT 权限」时作为退路。
 
 ## 5. 满足的核心需求
 - **三端增删改查 + 同步**：任意设备浏览器开同一 Pages 链接，数据落在同一仓库。
 - **无感操作**：token 在本机浏览器持久化，自动认证，无微信授权、无每次登录；换设备 / 换浏览器需重新粘贴一次。
 - **免费**：GitHub Pages + 仓库 + API 全部免费。
-- **可扩展**：加模块 = 加 UI + 加 `data.json` key + 复用 API 层；图片复用 `images/`；博客用 `posts/`。
+- **可扩展**：加模块 = 加 UI + 加 `data.json` key + 复用 API 层；图片复用 `images/`；博客用 `posts/`；微信读书等外部数据通过 Worker 中转接入。
 
 ## 6. 容量与扩展策略
 - `data.json` 单文件上限 1 MB（Contents API）：时间序列（打卡）按年分片 + 位串压缩，十年 × 30 习惯也压不破。
@@ -53,5 +55,5 @@
 - 详见《设计开发文档.md》§7 容量策略。
 
 ## 7. 当前实施状态
-- 前端 10 模块已全部上线，数据层已迁移至仓库 Contents API，`images/` 上传压缩已实现；PAT 改为本机 localStorage 存储（公开仓库零源码明文）。
+- 前端 10 模块已全部上线，数据层已迁移至仓库 Contents API，`images/` 上传压缩已实现；PAT 改为本机 localStorage 存储（公开仓库零源码明文）；微信读书同步（书架 / 阅读统计 / 笔记）+ 阅读计划 + 阅读报告已接入，通过 Cloudflare Worker 透明中转。
 - 文档体系：`README.md`（入口）→ `overview.md`（需求）→ `设计开发文档.md`（技术）→ `setup.md`（部署）。
