@@ -675,6 +675,11 @@
             <div class="rr-progress-legend" id="rsProgressLegend"></div>
           </div>
 
+          <div class="rr-ratio" id="rsRatio" style="display:none;">
+            <div class="rr-ratio-bar" id="rsRatioBar"></div>
+            <div class="rr-ratio-legend" id="rsRatioLegend"></div>
+          </div>
+
           <div class="rr-columns">
             <div class="rr-col">
               <div class="rr-section-title">
@@ -706,6 +711,16 @@
             <span class="rr-icon">✍️</span> 偏好作者
           </div>
           <div class="rr-authors" id="rsAuthorList"></div>
+
+          <div class="rr-section-title">
+            <span class="rr-icon">🏢</span> 偏好出版社
+          </div>
+          <div class="rr-publishers" id="rsPublishers"></div>
+
+          <div class="rr-section-title">
+            <span class="rr-icon">🎨</span> 阅读画像
+          </div>
+          <div class="rr-portrait" id="rsPortrait"></div>
         </div>
 
         <div class="card" id="readStatsEmpty">
@@ -985,39 +1000,43 @@
 
   /* ===== 微信读书年度阅读报告 ===== */
   .read-report-card{
-    background: linear-gradient(160deg, #1B1735 0%, #221D42 50%, #2A224E 100%);
+    background: var(--card); border: 1px solid var(--border);
     border-radius: 22px; padding: 26px 22px 30px; margin-bottom: 16px;
-    color: #F0EEF8; box-shadow: 0 16px 40px rgba(75, 50, 130, 0.22);
+    color: var(--text); box-shadow: var(--shadow);
   }
   .rr-header{ margin-bottom: 24px; }
   .rr-year{
     font-size: 46px; font-weight: 900; line-height: 1;
-    background: linear-gradient(90deg, #F472B6, #A78BFA); -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; background-clip: text;
-    letter-spacing: -1px;
+    color: var(--primary); letter-spacing: -1px;
   }
-  .rr-title{ font-size: 20px; font-weight: 800; margin-top: 6px; color: #fff; }
-  .rr-subtitle{ font-size: 12px; color: #9C96B8; margin-top: 4px; }
+  .rr-title{ font-size: 20px; font-weight: 800; margin-top: 6px; color: var(--text); }
+  .rr-subtitle{ font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
   .rr-kpi-grid{
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px;
   }
   .rr-kpi{
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 16px 10px; text-align: center;
-    backdrop-filter: blur(4px);
+    background: var(--primary-light); border-radius: 16px; padding: 16px 10px; text-align: center;
   }
   .rr-kpi-num{
-    font-size: 28px; font-weight: 900; color: #fff; line-height: 1.1;
-    background: linear-gradient(180deg, #fff 0%, #C4B9FF 100%); -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent; background-clip: text;
+    font-size: 28px; font-weight: 900; color: var(--primary); line-height: 1.1;
   }
-  .rr-kpi-label{ font-size: 12px; color: #9C96B8; margin-top: 6px; }
+  .rr-kpi-label{ font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+  .rr-ratio{
+    background: var(--primary-light); border-radius: 16px; padding: 18px 16px; margin-bottom: 24px;
+  }
+  .rr-ratio-bar{
+    height: 24px; border-radius: 12px; background: #fff; border: 1px solid var(--border);
+    overflow: hidden; display: flex;
+  }
+  .rr-ratio-seg{ height: 100%; position: relative; transition: width .6s ease; }
+  .rr-ratio-seg.listen{ background: linear-gradient(90deg, #A78BFA, #8B5CF6); }
+  .rr-ratio-seg.read{ background: linear-gradient(90deg, #F472B6, #EC4899); }
+  .rr-ratio-legend{ display: flex; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--text-secondary); }
   .rr-progress{
-    background: rgba(255,255,255,0.05); border-radius: 16px; padding: 18px 16px;
-    margin-bottom: 24px;
+    background: var(--primary-light); border-radius: 16px; padding: 18px 16px; margin-bottom: 24px;
   }
   .rr-progress-bar{
-    height: 28px; border-radius: 14px; background: rgba(255,255,255,0.08);
+    height: 28px; border-radius: 14px; background: #fff; border: 1px solid var(--border);
     overflow: hidden; display: flex;
   }
   .rr-progress-seg{
@@ -1025,12 +1044,12 @@
   }
   .rr-progress-seg.done{ background: linear-gradient(90deg, #F472B6, #EC4899); }
   .rr-progress-seg.reading{ background: linear-gradient(90deg, #A78BFA, #8B5CF6); }
-  .rr-progress-seg.want{ background: linear-gradient(90deg, #60A5FA, #3B82F6); }
-  .rr-progress-seg.start{ background: linear-gradient(90deg, #34D399, #10B981); }
-  .rr-progress-seg.half{ background: linear-gradient(90deg, #FBBF24, #F59E0B); }
+  .rr-progress-seg.want{ background: linear-gradient(90deg, #9B8AC6, #8B7DC0); }
+  .rr-progress-seg.start{ background: linear-gradient(90deg, #7EC49A, #10B981); }
+  .rr-progress-seg.half{ background: linear-gradient(90deg, #E6C068, #F59E0B); }
   .rr-progress-seg.near{ background: linear-gradient(90deg, #FB923C, #F97316); }
   .rr-progress-legend{
-    display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; font-size: 12px; color: #C8C2DD;
+    display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; font-size: 12px; color: var(--text-secondary);
   }
   .rr-legend-dot{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
   .rr-columns{
@@ -1038,73 +1057,74 @@
   }
   @media (min-width:900px){ .rr-columns{ grid-template-columns: 1.1fr 0.9fr; } }
   .rr-section-title{
-    font-size: 15px; font-weight: 800; color: #fff; margin: 0 0 14px;
+    font-size: 15px; font-weight: 800; color: var(--text); margin: 0 0 14px;
     display: flex; align-items: center; gap: 6px;
   }
   .rr-icon{ font-size: 15px; line-height: 1; }
   .rr-top10{ display: flex; flex-direction: column; gap: 10px; }
   .rr-rank{
     display: flex; align-items: center; gap: 12px;
-    background: rgba(255,255,255,0.05); border-radius: 14px; padding: 12px 13px;
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 13px;
   }
   .rr-rank-num{
     width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; color: #B8B3CC; background: rgba(255,255,255,0.08); flex: 0 0 24px;
+    font-size: 12px; font-weight: 800; color: var(--primary); background: var(--primary-light); flex: 0 0 24px;
   }
   .rr-rank-num.top1{ background: linear-gradient(135deg, #FDE68A, #F59E0B); color: #4A3B00; }
   .rr-rank-num.top2{ background: linear-gradient(135deg, #E5E7EB, #9CA3AF); color: #374151; }
   .rr-rank-num.top3{ background: linear-gradient(135deg, #FBCFE8, #F472B6); color: #831843; }
   .rr-rank-info{ flex: 1; min-width: 0; }
   .rr-rank-title{
-    font-size: 14px; font-weight: 700; color: #fff;
+    font-size: 14px; font-weight: 700; color: var(--text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .rr-rank-meta{ font-size: 11px; color: #9C96B8; margin-top: 2px; }
+  .rr-rank-meta{ font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
   .rr-rank-time{
-    font-size: 13px; font-weight: 800; color: #F0A8D0; flex: 0 0 auto; text-align: right;
+    font-size: 13px; font-weight: 800; color: var(--primary); flex: 0 0 auto; text-align: right;
   }
   .rr-categories{ display: flex; flex-direction: column; gap: 10px; }
   .rr-cat{
     display: grid; grid-template-columns: 1fr 60px; align-items: center; gap: 8px;
   }
   .rr-cat-row{ display: flex; align-items: center; gap: 8px; }
-  .rr-cat-name{ font-size: 13px; color: #E8E4F0; font-weight: 600; flex: 0 0 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rr-cat-track{ flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
-  .rr-cat-fill{ height: 100%; border-radius: 4px; background: linear-gradient(90deg, #A78BFA, #F472B6); transition: width .5s ease; }
-  .rr-cat-meta{ font-size: 11px; color: #9C96B8; text-align: right; }
+  .rr-cat-name{ font-size: 13px; color: var(--text); font-weight: 600; flex: 0 0 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr-cat-track{ flex: 1; height: 8px; border-radius: 4px; background: #fff; border: 1px solid var(--border); overflow: hidden; }
+  .rr-cat-fill{ height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), #F472B6); transition: width .5s ease; }
+  .rr-cat-meta{ font-size: 11px; color: var(--text-secondary); text-align: right; }
   .rr-trend{
     display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 8px 0 22px; position: relative;
   }
   .rr-trend-bar{
     flex: 1; border-radius: 6px 6px 0 0; min-height: 4px;
-    background: linear-gradient(180deg, #F472B6, #A78BFA); opacity: .9;
+    background: linear-gradient(180deg, var(--primary), #F472B6); opacity: .9;
     position: relative; transition: height .4s ease;
   }
   .rr-trend-bar:hover{ opacity: 1; }
-  .rr-trend-val{ position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #F0EEF8; white-space: nowrap; }
-  .rr-trend-label{ position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #9C96B8; white-space: nowrap; }
+  .rr-trend-val{ position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text); white-space: nowrap; }
+  .rr-trend-label{ position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-secondary); white-space: nowrap; }
   .rr-achievements{
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 18px; padding: 18px 16px; margin-bottom: 24px;
+    background: var(--primary-light); border-radius: 18px; padding: 18px 16px; margin-bottom: 24px;
   }
   .rr-ach-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .rr-ach{ text-align: center; }
-  .rr-ach-num{ font-size: 24px; font-weight: 900; color: #FDE68A; line-height: 1; }
-  .rr-ach-label{ font-size: 12px; color: #9C96B8; margin-top: 5px; }
+  .rr-ach-num{ font-size: 24px; font-weight: 900; color: var(--primary); line-height: 1; }
+  .rr-ach-label{ font-size: 12px; color: var(--text-secondary); margin-top: 5px; }
+  .rr-publishers{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .rr-publisher{ display: inline-flex; align-items: center; gap: 6px; background: var(--primary-light); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .rr-portrait{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
+  .rr-portrait-tag{ display: inline-flex; align-items: center; gap: 5px; background: var(--primary-light); color: var(--primary); padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .rr-authors{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .rr-author{
     display: flex; align-items: center; gap: 10px;
-    background: rgba(255,255,255,0.05); border-radius: 12px; padding: 11px 12px;
-    border: 1px solid rgba(255,255,255,0.05);
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 11px 12px;
   }
   .rr-author-avatar{
-    width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A78BFA, #F472B6);
+    width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #F472B6);
     display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex: 0 0 34px;
   }
   .rr-author-info{ flex: 1; min-width: 0; }
-  .rr-author-name{ font-size: 13px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .rr-author-meta{ font-size: 11px; color: #9C96B8; margin-top: 1px; }
+  .rr-author-name{ font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr-author-meta{ font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
 
   /* 云端同步 Token 状态 + 首次粘贴模态框 */
   .token-status{font-weight:600;color:var(--red);}
@@ -1173,11 +1193,11 @@
   /* ===== 书架网格 ===== */
   .bookshelf-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 14px;
   }
-  @media (min-width: 640px) { .bookshelf-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (min-width: 1024px) { .bookshelf-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 640px) { .bookshelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .bookshelf-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
   /* ===== 书籍卡片 V2（微信读书风格） ===== */
   .book-card-v2 {
@@ -1188,6 +1208,8 @@
     display: flex;
     gap: 14px;
     align-items: flex-start;
+    min-width: 0;
+    overflow: hidden;
     transition: transform .15s, box-shadow .15s;
   }
   .book-card-v2:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -1207,6 +1229,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 100%;
   }
   .book-author-v2 {
     font-size: 12px;
@@ -1746,10 +1769,11 @@
           var author = b.author || b.bookInfo && b.bookInfo.author || '佚名';
           var cover = b.cover || b.bookInfo && b.bookInfo.cover || '';
           var category = b.category || b.bookInfo && b.bookInfo.category || '';
+          var publisher = b.publisher || b.bookInfo && b.bookInfo.publisher || '';
           var progress = typeof b.readProgress === 'number' ? b.readProgress : (typeof b.progress === 'number' ? b.progress : 0);
           var readTime = b.readTime || b.totalReadTime || 0;
           var noteCount = typeof b.noteCount === 'number' ? b.noteCount : 0;
-          return { _id: genId(), title: title, author: author, cover: cover, category: category, progress: progress, readTime: readTime, noteCount: noteCount, status: progress >= 100 ? '读完' : progress > 0 ? '在读' : '想读', raw: b };
+          return { _id: genId(), title: title, author: author, cover: cover, category: category, publisher: publisher, progress: progress, readTime: readTime, noteCount: noteCount, status: progress >= 100 ? '读完' : progress > 0 ? '在读' : '想读', raw: b };
         });
         state.readStats = stats || null;
         state.notebooks = notebooks.map(function(n){ return { _id: genId(), bookId: n.bookId || '', title: n.title || '未命名', noteCount: n.noteCount || 0, notes: n.notes || [], raw: n }; });
@@ -1906,9 +1930,68 @@
         el.innerHTML = '<div class="rr-author-avatar">' + (name ? name.slice(0,1) : 'A') + '</div>'
           + '<div class="rr-author-info"><div class="rr-author-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</div>'
           + '<div class="rr-author-meta">' + count + ' 本 · ' + fmtReadTime(t) + '</div></div>';
-        authorList.appendChild(el);
-      });
+      authorList.appendChild(el);
+    });
+
+    // 听书 / 阅读比例
+    var ratio = document.getElementById('rsRatio');
+    var ratioBar = document.getElementById('rsRatioBar');
+    var ratioLegend = document.getElementById('rsRatioLegend');
+    var listenTime = s.listenTime || s.listenTimeInSeconds || 0;
+    var readTimeVal = s.readTime || s.totalReadTime || 0;
+    if (listenTime > 0 || readTimeVal > 0) {
+      ratio.style.display = 'block';
+      ratioBar.innerHTML = ''; ratioLegend.innerHTML = '';
+      var totalTime = listenTime + readTimeVal;
+      var listenPct = totalTime ? (listenTime / totalTime * 100).toFixed(1) : 0;
+      var readPct = totalTime ? (readTimeVal / totalTime * 100).toFixed(1) : 0;
+      if (listenTime > 0) {
+        var ls = document.createElement('div'); ls.className = 'rr-ratio-seg listen'; ls.style.width = listenPct + '%';
+        ratioBar.appendChild(ls);
+        ratioLegend.innerHTML += '<span>🎧 听书 ' + listenPct + '% (' + fmtReadTime(listenTime) + ')</span>';
+      }
+      if (readTimeVal > 0) {
+        var rs2 = document.createElement('div'); rs2.className = 'rr-ratio-seg read'; rs2.style.width = readPct + '%';
+        ratioBar.appendChild(rs2);
+        ratioLegend.innerHTML += '<span>📖 阅读 ' + readPct + '% (' + fmtReadTime(readTimeVal) + ')</span>';
+      }
     } else {
+      ratio.style.display = 'none';
+    }
+
+    // 偏好出版社
+    var publishers = {};
+    state.books.forEach(function(b){ if (b.publisher) { publishers[b.publisher] = (publishers[b.publisher] || 0) + 1; } });
+    var pubList = document.getElementById('rsPublishers'); pubList.innerHTML = '';
+    var pubKeys = Object.keys(publishers).sort(function(a,b){ return publishers[b] - publishers[a]; });
+    if (!pubKeys.length) pubList.innerHTML = '<span class="empty-state">暂无出版社数据</span>';
+    pubKeys.slice(0, 12).forEach(function(p){
+      var pe = document.createElement('span'); pe.className = 'rr-publisher';
+      pe.textContent = p + ' ' + publishers[p] + ' 本';
+      pubList.appendChild(pe);
+    });
+
+    // 阅读画像
+    var portrait = document.getElementById('rsPortrait'); portrait.innerHTML = '';
+    var tags = [];
+    var catMap = {};
+    state.books.forEach(function(b){ if (b.category) catMap[b.category] = (catMap[b.category] || 0) + 1; });
+    var topCat = Object.keys(catMap).sort(function(a,b){ return catMap[b] - catMap[a]; })[0];
+    if (topCat) tags.push({ icon: '📚', text: '偏好' + topCat });
+    var readLongest = s.readLongest && s.readLongest.length ? s.readLongest[0] : null;
+    if (readLongest) tags.push({ icon: '⏱️', text: '单日最久：' + (readLongest.title || readLongest.bookName || '') + ' ' + fmtReadTime(readLongest.readTime || readLongest.time || 0) });
+    var firstBook = state.books.slice().sort(function(a,b){ return ((a.raw && a.raw.readUpdateTime) || 0) - ((b.raw && b.raw.readUpdateTime) || 0); })[0];
+    if (firstBook) tags.push({ icon: '📖', text: '年度首本：' + firstBook.title });
+    var thinkMost = state.notebooks.slice().sort(function(a,b){ return (b.noteCount || 0) - (a.noteCount || 0); })[0];
+    if (thinkMost && thinkMost.noteCount > 0) tags.push({ icon: '💡', text: '思考最多：' + thinkMost.title });
+    if (s.preferReadTime) tags.push({ icon: '🌙', text: '偏好' + s.preferReadTime + '阅读' });
+    if (!tags.length) portrait.innerHTML = '<span class="empty-state">暂无画像数据</span>';
+    tags.forEach(function(t){
+      var te = document.createElement('span'); te.className = 'rr-portrait-tag';
+      te.textContent = t.icon + ' ' + t.text;
+      portrait.appendChild(te);
+    });
+  } else {
       statsCard.style.display = 'none'; statsEmpty.style.display = 'block';
     }
 
