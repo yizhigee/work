@@ -1,10 +1,10 @@
 <!--
-  ⚠️ 安全提醒（GitHub 仓库 + GitHub Pages 方案）
-  · 本页面通过内嵌的 GitHub fine-grained PAT 直连 GitHub API，读写一个 secret gist。
-  · PAT 以明文形式暴露在页面源码中，任何人「查看网页源代码」都能取到。
-  · 链接一旦外传，他人即可读取并改写你的全部数据（习惯 / 待办 / 打卡 / 专注记录 / 设置）。
-  · 本项目仅限【单人单设备】使用，请勿将页面链接分享给任何人。
-  · 若链接疑似泄露，请立即到 GitHub 吊销并轮换该 PAT。
+  ⚠️ 安全模型（GitHub 仓库 + GitHub Pages + Cloudflare Worker 网关）
+  · 本页面【不包含】任何 GitHub PAT 或微信读书 Key——全部凭证仅存于 Cloudflare Worker（weread-proxy）的环境变量中。
+  · 前端只持有公开的 Worker 地址与一个轻量 APP_KEY 闸门（非有权限凭证，仅挡随机滥用）。
+  · 数据存仓库内 data.json，图片存 images/，博客存 posts/，页面经 GitHub Pages 托管。
+  · 即便页面链接 / 源码外传，他人也拿不到任何可写凭证，无法篡改你的数据；换设备 / 换浏览器无需重配。
+  · 凭证轮换只需在 Cloudflare 后台改环境变量并 Deploy，无需改动本页面。
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">

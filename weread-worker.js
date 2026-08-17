@@ -58,6 +58,18 @@ function withCors(resp, cors) {
   return resp;
 }
 
+// 真实校验 PAT 能否访问目标仓库：
+//   200 = 文件存在且 token 可用；404 = 文件不存在但 token/权限可用；401/403 = token 失效或权限不足。
+async function checkGithub(env) {
+  try {
+    const url = ghContentsUrl(env, env.GITHUB_DATA_FILE || 'data.json') + '?ref=' + (env.GITHUB_BRANCH || 'main');
+    const r = await fetch(url, { headers: ghHeaders(env) });
+    return r.status === 200 || r.status === 404;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function handleData(request, env) {
   const path = env.GITHUB_DATA_FILE || 'data.json';
   const branch = env.GITHUB_BRANCH || 'main';
@@ -156,7 +168,10 @@ export default {
       if (p === '/api/data') return withCors(await handleData(request, env), cors);
       if (p === '/api/image') return withCors(await handleImage(request, env), cors);
       if (p === '/api/weread') return withCors(await handleWeread(request, env), cors);
-      if (p === '/' || p === '/health') return withCors(json({ ok: true, github: !!env.GITHUB_PAT, weread: !!env.WEREAD_KEY }), cors);
+      if (p === '/' || p === '/health') {
+        const ghOk = await checkGithub(env);
+        return withCors(json({ ok: true, github: ghOk, weread: !!env.WEREAD_KEY }), cors);
+      }
       return withCors(json({ ok: false, errmsg: 'not found' }, 404), cors);
     } catch (e) {
       return withCors(json({ ok: false, errmsg: 'worker error: ' + e.message }), 500);
