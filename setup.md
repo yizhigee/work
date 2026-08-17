@@ -15,12 +15,24 @@
 ## 第 4 步：准备初始 data.json
 仓库里放一个 `data.json` 初始空结构（见《设计开发文档.md》§4），首次提交带进去。
 
-## 第 5 步：粘贴 Token（存本机浏览器，不进源码）
-打开已部署的 Pages 链接（或本地 `workspace.html`），**首次进入会弹出「设置云端同步 Token」**：
-- 把第 3 步复制的 fine-grained PAT 粘贴进去 → 保存并进入。
-- Token **仅保存在当前设备、当前浏览器的 localStorage**（键 `wb_github_pat`），**不会写入公开源码**，因此页面链接外传也读不了、写不了。
-- 换设备 / 换浏览器打开时，会再次弹窗要求粘贴（各端各粘一次）。
-- 也可在「设置 → 云端同步 Token」里随时查看尾号、重新保存或清除。
+## 第 5 步：部署 Cloudflare Worker 网关（统一保管凭证）
+本方案把 GitHub PAT 与微信读书 Key 都放在 Worker 环境变量，前端 `workspace.html` 零 token。因此 Worker 是必需的（不再「可选」）。
+
+1. 登录 https://dash.cloudflare.com/（免费账号即可）。
+2. **Workers & Pages → Create → Worker**，命名为 `weread-proxy`。
+3. 进入 Worker 的 **Edit code**，把仓库里的 `weread-worker.js` 完整粘贴进去，点 **Deploy**。
+4. **Settings → Variables**（环境变量）添加以下项：
+   - `GITHUB_PAT`：第 3 步复制的 fine-grained PAT
+   - `GITHUB_OWNER`：`yizhigee`
+   - `GITHUB_REPO`：`work`
+   - `GITHUB_BRANCH`：`main`
+   - `GITHUB_DATA_FILE`：`data.json`
+   - `WEREAD_KEY`：微信读书 Skill API Key（以 `wrk-` 开头；不需要微信读书同步可留空，但变量仍建议建）
+   - `APP_KEY`：`workbench-gate-2026`（必须与 `workspace.html` 里的 `APP_KEY` 常量一致）
+5. 保存变量后**再次 Deploy** 使环境变量生效。复制 Worker 地址，形如 `https://weread-proxy.xxx.workers.dev/`。
+6. 确认 `workspace.html` 顶部 `WORKER_URL` 常量与该地址一致（本仓库已预填 `weread-proxy.lucky888312.workers.dev`，若你自建 Worker 需同步改这一行）。
+
+> 前端不再有「粘贴 Token / Key」的弹窗或设置项；所有凭证都在 Worker 后台。换设备 / 换浏览器无需重新配置。
 
 ## 第 6 步：push 到仓库
 ```bash
@@ -35,32 +47,19 @@ git push -u origin main
 ## 第 7 步：验证
 打开 Pages 链接 → 添加一条待办 → 刷新页面，数据仍在 = 成功。
 
+## 第 7 步：验证
+打开 Pages 链接 → 添加一条待办 → 刷新页面，数据仍在 = 成功（说明 Worker 网关读写 data.json 正常）。
+
 ## 第 8 步（可选）：微信读书同步
-如果不需要微信读书数据，可跳过本步。
-
-### 8.1 获取微信读书 Skill API Key
-1. 安装微信读书 Skill：按 Skill 提供的指令完成安装并登录（通常需要微信读书账号授权）。
-2. 在 Skill 界面点击「获取 API Key」，复制以 `wrk-` 开头的 Key（只显示一次）。
-
-### 8.2 部署 Cloudflare Worker 中转
-微信读书网关只允许自家域名跨域，GitHub Pages 无法直接调用，因此需要一个免费 Worker 做透明转发：
-1. 登录 https://dash.cloudflare.com/（免费账号即可）。
-2. 进入 **Workers & Pages → Create → Worker**，命名为 `weread-proxy`。
-3. 进入 Worker 的 **Edit code**，把仓库里的 `weread-worker.js` 完整粘贴进去，点 **Deploy**。
-4. 复制 Worker 地址，形如 `https://weread-proxy.xxx.workers.dev/`。
-
-### 8.3 在工作台填写配置
-1. 打开工作台 →「设置 → 微信读书同步」。
-2. 粘贴 API Key 和 Worker 地址 → 保存配置。
-3. 进入「阅读」模块，点击「立即同步」。
-4. 同步成功后，书架、阅读报告、阅读计划关联的书籍进度会自动显示。
-
-**安全说明**：Key 与 Worker 地址只保存在当前设备浏览器 localStorage；换设备 / 换浏览器需重新填写。
+微信读书 Key 已在第 5 步写入 Worker 环境变量 `WEREAD_KEY`，无需在工作台再填。
+1. 进入工作台「设置 → 微信读书同步」，点「立即同步」。
+2. 同步成功后，书架、阅读报告、阅读计划关联的书籍进度会自动显示。
 
 ## 常见问题
-- **Q：PAT 泄露怎么办？** A：到 GitHub 吊销旧 token；本机在「设置 → 云端同步 Token」点「清除本机 Token」后重新粘贴新 token 即可（无需改源码、无需重新 push）。
-- **Q：图片存哪？** A：`images/`，由 Pages 直接托管，无需额外服务。
+- **Q：PAT 泄露怎么办？** A：到 GitHub 吊销旧 token，并在 Cloudflare Worker 后台把 `GITHUB_PAT` 更新为新值后重新 Deploy 即可（无需改前端源码、无需重新 push 前端）。
+- **Q：图片存哪？** A：`images/`，写经 Worker `/api/image`，读由 Pages 直接托管，无需额外服务。
 - **Q：data.json 太大？** A：打卡按年分片 + 压缩（见设计文档 §7）；单文件仍可用 Git Data API。
 - **Q：要存博客？** A：每篇博文存 `posts/` 独立文件。
-- **Q：微信读书同步失败？** A：先确认 Worker 地址能在浏览器直接打开（应返回 `method not allowed`）；再检查 Key 是否以 `wrk-` 开头；最后确认 Skill 本身未过期或被吊销。
+- **Q：微信读书同步失败？** A：先确认 Worker 地址能在浏览器直接打开（应返回 `ok` 健康检查 JSON）；再检查 `WEREAD_KEY` 是否以 `wrk-` 开头且 Skill 未过期；最后确认 `APP_KEY` 前后端一致。
 - **Q：Worker 部署报错 502？** A：Worker 刚部署后可能有几秒到几十秒传播延迟，刷新或重新 Deploy 一次即可。
+- **Q：换设备还要重新配置吗？** A：不需要。凭证都在 Worker 后端，前端打开即用，零配置。

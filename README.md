@@ -7,15 +7,15 @@
 - 规划中：博客（公开博文）
 
 ## 技术架构（一句话）
-单一 GitHub 仓库（`workspace.html` + `data.json` + `images/` + `posts/`）经 GitHub Pages 托管；fine-grained PAT（仅本仓库 Contents）由用户在首次打开时粘贴、存于本机浏览器，负责数据 / 图片 / 博文的读写。微信读书同步需额外部署一个免费 Cloudflare Worker（`weread-worker.js`）做 CORS 透明中转。无后端、免费。
+单一 GitHub 仓库（`workspace.html` + `data.json` + `images/` + `posts/`）经 GitHub Pages 托管；GitHub PAT 与微信读书 Key **统一托管在 Cloudflare Worker 环境变量**（`weread-worker.js` 作统一后端网关），前端 `workspace.html` 零 token、零 localStorage 密钥，只持 Worker 地址 + 轻量 APP_KEY 闸门。数据 / 图片读写与微信读书同步全部经该 Worker 转发鉴权。免费、无自有服务器。
 
 ## 快速开始
-1. 看 [setup.md](./setup.md) 完成仓库 / Pages / PAT / 部署。
-2. 打开 https://yizhigee.github.io/work/workspace.html 即可使用（需先在仓库 Settings → Pages 启用 main 分支）。
+1. 看 [setup.md](./setup.md) 完成仓库 / Pages / Worker 部署与环境变量配置。
+2. 打开 https://yizhigee.github.io/work/workspace.html 即可使用（需先在仓库 Settings → Pages 启用 main 分支，并在 Worker 后台填入环境变量）。
 
 ## 安全提示
-- PAT 存于本机浏览器（localStorage，键 `wb_github_pat`），源码不含明文；页面链接外传也无法读写。
-- 微信读书 API Key 同样只存本机浏览器（localStorage，键 `wb_weread_key`），Worker 仅做透明转发、不存储 Key。
+- GitHub PAT 与微信读书 Key **仅存于 Cloudflare Worker 环境变量**（后台设置），不进仓库源码、不下发浏览器、不写 localStorage。
+- 前端只持有公开的 Worker 地址与一个轻量 APP_KEY 闸门（非有权限凭证，仅挡随机滥用）；即使页面链接 / 源码外传也拿不到任何可写凭证。
 - 详见《设计开发文档.md》安全。
 
 ## 文档导航

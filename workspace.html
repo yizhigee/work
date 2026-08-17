@@ -562,45 +562,21 @@
         </div>
 
         <div class="card">
-          <div class="card-title">云端同步 Token</div>
-          <p class="card-hint">PAT 仅保存在本机浏览器（localStorage），不写入公开源码。换设备 / 换浏览器需重新粘贴一次。请使用仅授权本仓库 <code>Contents: Read and Write</code> 的 fine-grained PAT。</p>
+          <div class="card-title">云端同步</div>
+          <p class="card-hint">数据读写与微信读书鉴权全部经 Cloudflare Worker 网关完成。GitHub PAT 与微信读书 Key 仅存于 Worker 环境变量，不下发浏览器、不进源码、不存 localStorage，换设备 / 换浏览器无需重新配置。</p>
           <div class="form-row">
-            <label>当前状态</label>
-            <span id="tokenStatus" class="token-status">未设置</span>
-          </div>
-          <div class="form-row">
-            <label>Token</label>
-            <input class="form-input" id="tokenInput" type="password" placeholder="粘贴 github_pat_xxx" autocomplete="off">
-            <button class="btn btn-primary btn-small" id="saveTokenBtn">保存</button>
-          </div>
-          <div class="form-row">
-            <button class="btn btn-small btn-danger" id="clearTokenBtn">清除本机 Token</button>
+            <label>后端状态</label>
+            <span id="backendStatus" class="token-status">未连接</span>
           </div>
         </div>
 
         <div class="card">
           <div class="card-title">微信读书同步</div>
-          <p class="card-hint">书架、阅读统计、笔记全部来自微信读书。Key 与 Worker 地址仅保存在本机浏览器，不写入公开源码。</p>
-          <div class="form-row">
-            <label>当前状态</label>
-            <span id="wereadStatus" class="token-status">未设置</span>
-          </div>
-          <div class="form-row">
-            <label>API Key</label>
-            <input class="form-input" id="wereadKeyInput" type="password" placeholder="wrk-xxx" autocomplete="off">
-          </div>
-          <div class="form-row">
-            <label>Worker 地址</label>
-            <input class="form-input" id="wereadWorkerInput" type="text" placeholder="https://weread-proxy.xxx.workers.dev" autocomplete="off">
-          </div>
-          <div class="form-row">
-            <button class="btn btn-primary btn-small" id="saveWereadBtn">保存配置</button>
-            <button class="btn btn-small btn-danger" id="clearWereadBtn">清除配置</button>
-          </div>
+          <p class="card-hint">书架、阅读统计、笔记全部来自微信读书，已通过后端网关自动鉴权，无需手动填写 Key。</p>
           <div class="weread-sync-inline">
             <div>
               <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
-              <div class="weread-sync-meta" id="wereadSyncMeta">首次使用请先在「设置」里保存 Key 和 Worker 地址</div>
+              <div class="weread-sync-meta" id="wereadSyncMeta">点击「立即同步」拉取微信读书数据</div>
             </div>
             <button class="btn btn-primary btn-small" id="wereadSyncBtn">立即同步</button>
           </div>
@@ -1123,16 +1099,9 @@
   .rr-author-name{ font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rr-author-meta{ font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
 
-  /* 云端同步 Token 状态 + 首次粘贴模态框 */
+  /* 云端同步后端状态 */
   .token-status{font-weight:600;color:var(--red);}
   .token-status.ok{color:var(--green);}
-  #tokenOverlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
-    background:rgba(8,10,16,0.82);backdrop-filter:blur(4px);padding:20px;}
-  .token-box{width:100%;max-width:460px;background:var(--card);border:1px solid var(--border);border-radius:16px;
-    padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
-  .token-box-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px;}
-  .token-box-hint{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 6px;}
-  .token-box-err{color:var(--red);font-size:13px;min-height:18px;margin:8px 0 0;}
 
   /* ===== 阅读模块 Tab ===== */
   .reading-tabs { margin-bottom: 16px; }
@@ -1283,38 +1252,32 @@
 (function() {
   'use strict';
 
-  // ===== GitHub 仓库配置（单仓库托管：workspace.html + data.json 经 GitHub Pages 发布）=====
-  // OWNER / REPO / BRANCH 已固定为当前部署仓库；改名需同步改 GitHub Pages 基址与 manifest 的 start_url。
-  // 安全说明：公开仓库部署，PAT 绝不明文写进源码（会被 secret scanning 拦截且任何人可读源码即获写权限）。
-  // 改为「按设备存 localStorage」：首次打开弹窗粘贴，仅本机本浏览器可用，源码零明文 token。
-  var CONFIG = {
-    OWNER: 'yizhigee',
-    REPO: 'work',
-    BRANCH: 'main',
-    DATA_FILE: 'data.json',
-    GITHUB_TOKEN: ''   // 仅作兜底；正式值由用户在各端首次打开时粘贴并存入 localStorage
-  };
-  var TOKEN_KEY = 'wb_github_pat';
-  var WEREAD_KEY = 'wb_weread_key';
-  var WEREAD_WORKER_KEY = 'wb_weread_worker_url';
-  var GITHUB_API = 'https://api.github.com';
-  function contentsUrl() {
-    return GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + CONFIG.DATA_FILE;
+  // ===== 后端配置（凭证统一托管在 Cloudflare Worker，前端零 token）=====
+  // 安全模型：GitHub PAT 与微信读书 Key 仅存于 Worker 环境变量（Cloudflare 后台），
+  //   不下发浏览器、不进公开仓库源码、也不存 localStorage。前端只持有 Worker 地址与一个
+  //   轻量 APP_KEY 闸门（非有权限凭证，仅挡随机滥用）。换设备/换浏览器无需重新配置。
+  var CONFIG = { OWNER: 'yizhigee', REPO: 'work', BRANCH: 'main', DATA_FILE: 'data.json' };
+  // Worker 网关地址（公开，但仅作中转，不含任何密钥）
+  var WORKER_URL = 'https://weread-proxy.lucky888312.workers.dev';
+  // 轻量闸门密钥：与 Worker 环境变量 APP_KEY 保持一致即可；非敏感，仅防随机调用。
+  var APP_KEY = 'workbench-gate-2026';
+
+  function isBackendConfigured() { return !!WORKER_URL; }
+  function isTokenSet() { return true; }        // 凭证在 Worker，前端无需配置
+  function isWereadKeySet() { return true; }     // 同上
+
+  // 统一访问 Worker 网关（自动带 APP_KEY 闸门头）
+  function workerApi(path, opts) {
+    opts = opts || {};
+    var headers = { 'Content-Type': 'application/json', 'x-app-key': APP_KEY };
+    return fetch(WORKER_URL + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function(res){
+      return res.json().catch(function(){ return { ok:false, errmsg:'bad response (http '+res.status+')' }; });
+    });
   }
-  // 读取 token：优先 localStorage（各端各自粘贴），兜底 CONFIG 占位（通常为空）
-  function getToken() {
-    try { var t = localStorage.getItem(TOKEN_KEY); if (t) return t; } catch(e) {}
-    return CONFIG.GITHUB_TOKEN || '';
-  }
-  function setToken(t) {
-    try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch(e) {}
-  }
-  function isTokenSet() { var t = getToken(); return !!(t && t !== 'YOUR_GITHUB_TOKEN'); }
-  function getWereadKey() { try { var k = localStorage.getItem(WEREAD_KEY); if (k) return k; } catch(e){} return ''; }
-  function setWereadKey(k) { try { if (k) localStorage.setItem(WEREAD_KEY, k); else localStorage.removeItem(WEREAD_KEY); } catch(e){} }
-  function getWereadWorkerUrl() { try { var u = localStorage.getItem(WEREAD_WORKER_KEY); if (u) return u.replace(/\/$/, ''); } catch(e){} return ''; }
-  function setWereadWorkerUrl(u) { try { if (u) localStorage.setItem(WEREAD_WORKER_KEY, u.replace(/\/$/, '')); else localStorage.removeItem(WEREAD_WORKER_KEY); } catch(e){} }
-  function isWereadKeySet() { var k = getWereadKey(); return !!(k && k.indexOf('wrk-') === 0); }
   function fmtReadTime(seconds) {
     if (!seconds) return '0 小时';
     var h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60);
@@ -1405,20 +1368,13 @@
 
   function loadFromRepo() {
     setSync('syncing');
-    var url = contentsUrl() + '?ref=' + CONFIG.BRANCH;
-    var headers = { 'Accept': 'application/vnd.github+json' };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
-    return fetch(url, { headers: headers })
-      .then(function(res){
-        if (res.status === 404) { dataSha = null; applyState({}); setSync('synced'); return; }
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function(file){
-        if (!file || !file.content) return;
-        dataSha = file.sha;
+    return workerApi('/api/data')
+      .then(function(j){
+        if (!j.ok) throw new Error(j.errmsg || ('HTTP ' + (j.status || '?')));
+        if (j.empty || !j.data) { dataSha = null; applyState({}); setSync('synced'); return; }
+        dataSha = j.sha || null;
         var data;
-        try { data = JSON.parse(b64decodeUtf8(file.content)); } catch(e) { data = {}; }
+        try { data = JSON.parse(j.data); } catch(e) { data = {}; }
         if (!data || typeof data !== 'object') data = {};
         applyState(data);
         setSync('synced');
@@ -1426,7 +1382,7 @@
       .catch(function(err){
         console.error('loadFromRepo failed:', err);
         setSync('offline');
-        toast('同步失败：请检查 OWNER / REPO / TOKEN');
+        toast('同步失败：请检查 Worker 网关或网络');
         throw err;
       });
   }
@@ -1448,30 +1404,16 @@
       readingPlans: state.readingPlans,
       settings: state.settings
     };
-    var body = {
-      message: 'update ' + CONFIG.DATA_FILE,
-      content: b64encodeUtf8(JSON.stringify(data, null, 2)),
-      branch: CONFIG.BRANCH
-    };
-    if (typeof dataSha === 'string' && dataSha) body.sha = dataSha;
-    var headers = {
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
-    return fetch(contentsUrl(), { method: 'PUT', headers: headers, body: JSON.stringify(body) })
-      .then(function(res){
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
+    return workerApi('/api/data', { method:'PUT', body: { data: JSON.stringify(data), sha: (typeof dataSha === 'string' && dataSha) ? dataSha : undefined } })
       .then(function(j){
-        if (j && j.content && j.content.sha) dataSha = j.content.sha;
+        if (!j.ok) throw new Error(j.errmsg || ('HTTP ' + (j.status || '?')));
+        if (j.sha) dataSha = j.sha;
         setSync('synced');
       })
       .catch(function(err){
         console.error('saveToRepo failed:', err);
         setSync('offline');
-        toast('同步失败：请检查 OWNER / REPO / TOKEN');
+        toast('同步失败：请检查 Worker 网关或网络');
         throw err;
       });
   }
@@ -1704,44 +1646,31 @@
       var b64 = dataUrl.split(',')[1];
       var ts = new Date();
       var name = 'images/' + ts.getFullYear() + pad(ts.getMonth()+1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds()) + '-' + Math.random().toString(36).slice(2,6) + '.jpg';
-      var body = { message: 'add image ' + name, content: b64, branch: CONFIG.BRANCH };
-      var headers = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
-      if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
-      return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + name, { method:'PUT', headers: headers, body: JSON.stringify(body) })
-        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return name; });
+      return workerApi('/api/image', { method:'PUT', body: { path: name, content: b64 } })
+        .then(function(j){ if (!j.ok) throw new Error(j.errmsg || 'upload failed'); return name; });
     });
   }
   function deleteImageFromRepo(path) {
     if (!path) return Promise.resolve();
-    var headers = { 'Accept':'application/vnd.github+json' };
-    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + getToken();
-    return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path + '?ref=' + CONFIG.BRANCH, { headers: headers })
-      .then(function(res){ if (!res.ok) return null; return res.json(); })
-      .then(function(file){
-        if (!file || !file.sha) return null;
-        var delHeaders = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
-        if (isTokenSet()) delHeaders['Authorization'] = 'Bearer ' + getToken();
-        return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path, { method:'DELETE', headers: delHeaders, body: JSON.stringify({ message:'del image ' + path, sha: file.sha, branch: CONFIG.BRANCH }) });
-      });
+    return workerApi('/api/image', { method:'DELETE', body: { path: path } })
+      .then(function(j){ if (!j.ok) throw new Error(j.errmsg || 'delete failed'); return j; });
   }
 
   function setText(id, v){ var el = document.getElementById(id); if (el) el.textContent = v; }
   function weekStart(){ var d = new Date(); var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function monthStart(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-01'; }
 
-  // ===== 微信读书同步 =====
+  // ===== 微信读书同步（经 Worker 网关，前端零 Key）=====
   function wereadFetch(apiName, params) {
-    var url = getWereadWorkerUrl();
-    var key = getWereadKey();
-    if (!url || !key) return Promise.reject(new Error('请先保存微信读书 Key 和 Worker 地址'));
-    return fetch(url + '/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify(Object.assign({ api_name: apiName, skill_version: '1.0.4' }, params || {}))
-    }).then(function(res){ return res.json(); });
+    var body = Object.assign({ api_name: apiName, skill_version: '1.0.4' }, params || {});
+    return workerApi('/api/weread', { method:'POST', body: body })
+      .then(function(j){
+        if (!j) throw new Error('empty response');
+        return j; // Worker 透传微信读书原始 JSON（已注入 Key）
+      });
   }
   function syncWeread() {
-    if (!isWereadKeySet() || !getWereadWorkerUrl()) { toast('请先保存微信读书 Key 和 Worker 地址'); return Promise.resolve(); }
+    if (!isBackendConfigured()) { toast('后端未连接：请检查 Worker 网关配置'); return Promise.resolve(); }
     setSync('syncing');
     toast('正在同步微信读书…');
     var books = [], stats = null, notebooks = [];
@@ -1792,12 +1721,12 @@
 
   // ===== 阅读 =====
   function updateWereadSyncUI() {
-    var hasCfg = isWereadKeySet() && getWereadWorkerUrl();
+    var hasCfg = isBackendConfigured();
     var syncedAt = state.settings && state.settings.wereadSyncedAt;
     var hasData = state.books && state.books.length > 0;
-    setText('wereadSyncStatus', hasData ? '已同步' : (hasCfg ? '可同步' : '未配置'));
+    setText('wereadSyncStatus', hasData ? '已同步' : (hasCfg ? '可同步' : '后端未连接'));
     var meta = '';
-    if (!hasCfg) meta = '首次使用请先在「设置」里保存 Key 和 Worker 地址';
+    if (!hasCfg) meta = '后端网关未配置，请联系管理员';
     else if (syncedAt) meta = '上次同步：' + fmtDate(syncedAt) + ' ' + (new Date(syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}));
     else meta = '点击「立即同步」拉取微信读书数据';
     setText('wereadSyncMeta', meta);
@@ -1812,7 +1741,7 @@
     // 统计报告
     var statsCard = document.getElementById('readStatsCard');
     var statsEmpty = document.getElementById('readStatsEmpty');
-    if (hasData && state.readStats) {
+    if (state.books && state.books.length > 0 && state.readStats) {
       statsCard.style.display = 'block'; statsEmpty.style.display = 'none';
       var s = state.readStats;
       var syncedAt = state.settings && state.settings.wereadSyncedAt;
@@ -2423,16 +2352,8 @@
         fs.appendChild(chip);
       });
     }
-    var ts = document.getElementById('tokenStatus');
-    if (ts) { var tk = getToken(); ts.textContent = tk ? ('已设置（尾号 ' + tk.slice(-4) + '）') : '未设置'; ts.classList.toggle('ok', !!tk); }
-    var ws = document.getElementById('wereadStatus');
-    if (ws) {
-      var wk = getWereadKey(), wu = getWereadWorkerUrl();
-      if (wk && wu) { ws.textContent = '已设置（Key 尾号 ' + wk.slice(-4) + '）'; ws.classList.add('ok'); }
-      else if (wk) { ws.textContent = '已填 Key，缺少 Worker 地址'; ws.classList.remove('ok'); }
-      else if (wu) { ws.textContent = '已填 Worker 地址，缺少 Key'; ws.classList.remove('ok'); }
-      else { ws.textContent = '未设置'; ws.classList.remove('ok'); }
-    }
+    var bs = document.getElementById('backendStatus');
+    if (bs) { bs.textContent = isBackendConfigured() ? '已连接（Worker 网关）' : '未连接'; bs.classList.toggle('ok', isBackendConfigured()); }
     updateWereadSyncUI();
   }
 
@@ -2479,23 +2400,6 @@
     if (ss) ss.onclick = function(){ state.settings.sign = (document.getElementById('signatureInput').value || '').trim(); saveSettings().then(function(){ renderGreeting(); toast('签名已保存'); }); };
     var cd = document.getElementById('clearDataBtn');
     if (cd) cd.onclick = clearAllData;
-    var stb = document.getElementById('saveTokenBtn');
-    if (stb) stb.onclick = function(){ var v = (document.getElementById('tokenInput').value || '').trim(); if (!v) { toast('请先粘贴 Token'); return; } setToken(v); document.getElementById('tokenInput').value=''; renderSettings(); toast('Token 已保存到本机'); };
-    var ctb = document.getElementById('clearTokenBtn');
-    if (ctb) ctb.onclick = function(){ if (!confirm('确定清除本机 Token？清除后需重新粘贴才能同步。')) return; setToken(''); renderSettings(); toast('已清除本机 Token'); };
-
-    var swb = document.getElementById('saveWereadBtn');
-    if (swb) swb.onclick = function(){
-      var k = (document.getElementById('wereadKeyInput').value || '').trim();
-      var u = (document.getElementById('wereadWorkerInput').value || '').trim();
-      if (!k && !u) { toast('请至少填写 Key 或 Worker 地址'); return; }
-      if (k) setWereadKey(k);
-      if (u) setWereadWorkerUrl(u);
-      document.getElementById('wereadKeyInput').value = ''; document.getElementById('wereadWorkerInput').value = '';
-      renderSettings(); toast('微信读书配置已保存到本机');
-    };
-    var cwb = document.getElementById('clearWereadBtn');
-    if (cwb) cwb.onclick = function(){ if (!confirm('确定清除本机微信读书配置？')) return; setWereadKey(''); setWereadWorkerUrl(''); renderSettings(); renderReading(); toast('已清除微信读书配置'); };
   }
 
   function clearAllData() {
@@ -2520,39 +2424,12 @@
   initBookshelfFilters();
   renderNav();
 
-  // 首次打开（本机无 token）弹窗粘贴；已设置则直接进入
-  function showTokenModal() {
-    return new Promise(function(resolve){
-      var overlay = document.createElement('div');
-      overlay.id = 'tokenOverlay';
-      overlay.innerHTML = '<div class="token-box">' +
-        '<div class="token-box-title">设置云端同步 Token</div>' +
-        '<p class="token-box-hint">这是公开仓库部署，源码不含 Token。请把「仅授权 yizhigee/work 的 Contents: Read and Write」的 fine-grained PAT 粘贴到下方。它只会保存在你当前这台设备的浏览器里，换设备 / 换浏览器需重新粘贴一次。</p>' +
-        '<input id="tokenModalInput" class="form-input" type="password" placeholder="github_pat_xxx" autocomplete="off" style="width:100%;margin:12px 0;">' +
-        '<button id="tokenModalSave" class="btn btn-primary" style="width:100%;">保存并进入</button>' +
-        '<p class="token-box-err" id="tokenModalErr"></p>' +
-        '</div>';
-      document.body.appendChild(overlay);
-      function close(){ if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }
-      function save(){
-        var v = (document.getElementById('tokenModalInput').value || '').trim();
-        if (!v) { document.getElementById('tokenModalErr').textContent = '请输入 Token'; return; }
-        setToken(v); close(); resolve();
-      }
-      document.getElementById('tokenModalSave').onclick = save;
-      var inp = document.getElementById('tokenModalInput');
-      inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); });
-      setTimeout(function(){ inp.focus(); }, 60);
-    });
-  }
-
   function boot() {
     loadSettings().then(function(){ return loadAll(); })
       .then(function(){ applySettings(); renderSettings(); renderGreeting(); initTimer(); })
       .catch(function(){ initTimer(); });
   }
-  if (isTokenSet()) { boot(); }
-  else { showTokenModal().then(boot); }
+  boot();
 })();
 </script>
 </body>

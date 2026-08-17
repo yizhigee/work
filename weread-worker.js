@@ -1,82 +1,165 @@
-// 微信读书 CORS 中转 Worker
-// 用途：浏览器（GitHub Pages）无法直接跨域访问 i.weread.qq.com，
-//       本 Worker 在服务端转发请求并加回 CORS 头，绕开浏览器跨域限制。
-// 部署：Cloudflare Dashboard → Workers & Pages → Create Worker → 粘贴本文件 → Deploy
-//       然后把你的 *.workers.dev 地址填进 workspace.html 的微信读书 Worker 配置。
+// 工作台统一后端网关（Cloudflare Worker）
+// 职责：替前端保管 GitHub PAT 与微信读书 Key —— 前端零 token、零 localStorage 密钥。
+// 端点：
+//   GET    /api/data     读取 data.json（返回 {ok,data,sha}；404 返回空数据）
+//   PUT    /api/data     写入 data.json（body {data,sha} → 返回 {ok,sha}）
+//   POST   /api/weread   微信读书同步（body 即网关请求，Worker 注入 Key 后转发）
+//   PUT    /api/image    上传图片（body {path,content(base64)}）
+//   DELETE /api/image    删除图片（body {path}，Worker 内部取 sha 后删）
+//   GET    /            健康检查（返回 github / weread 配置就绪状态）
 //
-// 安全：本 Worker 不存储任何 API Key。Key 由浏览器在 Authorization: Bearer 头中传入，
-//       仅原样转发给微信读书网关。Worker 代码本身不含凭据，可放心提交到仓库。
+// 安全：GitHub PAT、微信读书 Key、APP_KEY 全部来自 Cloudflare 环境变量（后台设置），
+//   不进仓库、不下发前端、不写源码。APP_KEY 为轻量闸门，仅挡随机滥用（非有权限凭证）。
+// 部署：Cloudflare Dashboard → Workers → 选择 weread-proxy 这个 Worker → 粘贴本文件 → Deploy；
+//   并在 Settings → Variables 添加环境变量 GITHUB_PAT / WEREAD_KEY / GITHUB_OWNER /
+//   GITHUB_REPO / GITHUB_BRANCH / GITHUB_DATA_FILE / APP_KEY。
 
-const TARGET = 'https://i.weread.qq.com/api/agent/gateway';
+const GITHUB_API = 'https://api.github.com';
+
+function makeCors(origin) {
+  const allow = origin && origin !== 'null' ? origin : '*';
+  return {
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, x-app-key',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+}
+
+function checkGate(request, env) {
+  if (!env.APP_KEY) return true; // 未配置闸门则放行（fail-open）
+  const h = request.headers.get('x-app-key') ||
+            new URL(request.url).searchParams.get('appkey') || '';
+  return h === env.APP_KEY;
+}
+
+function ghHeaders(env, extra) {
+  return Object.assign(
+    { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + (env.GITHUB_PAT || '') },
+    extra || {}
+  );
+}
+
+function ghContentsUrl(env, path) {
+  return GITHUB_API + '/repos/' + (env.GITHUB_OWNER || 'yizhigee') + '/' +
+         (env.GITHUB_REPO || 'work') + '/contents/' + path;
+}
+
+function json(obj, status) {
+  return new Response(JSON.stringify(obj), {
+    status: status || 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+function withCors(resp, cors) {
+  for (const k in cors) resp.headers.set(k, cors[k]);
+  return resp;
+}
+
+async function handleData(request, env) {
+  const path = env.GITHUB_DATA_FILE || 'data.json';
+  const branch = env.GITHUB_BRANCH || 'main';
+  if (request.method === 'GET') {
+    const r = await fetch(ghContentsUrl(env, path) + '?ref=' + branch, { headers: ghHeaders(env) });
+    if (r.status === 404) return json({ ok: true, data: '{}', sha: null, empty: true });
+    if (!r.ok) return json({ ok: false, status: r.status, errmsg: 'github get failed' }, r.status);
+    const f = await r.json();
+    const content = (f.content || '').replace(/\s/g, '');
+    let data = '{}';
+    try { data = atob(content); } catch (e) { data = '{}'; }
+    return json({ ok: true, data: data, sha: f.sha });
+  }
+  if (request.method === 'PUT') {
+    const body = await request.json().catch(function () { return {}; });
+    const b64 = btoa(unescape(encodeURIComponent(body.data || '{}')));
+    const ghBody = { message: 'update ' + path, content: b64 };
+    if (body.sha) ghBody.sha = body.sha;
+    const r = await fetch(ghContentsUrl(env, path), {
+      method: 'PUT',
+      headers: ghHeaders(env, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(ghBody),
+    });
+    if (!r.ok) return json({ ok: false, status: r.status, errmsg: 'github put failed' }, r.status);
+    const j = await r.json();
+    return json({ ok: true, sha: j && j.content && j.content.sha });
+  }
+  return json({ ok: false, errmsg: 'method not allowed' }, 405);
+}
+
+async function handleImage(request, env) {
+  const branch = env.GITHUB_BRANCH || 'main';
+  if (request.method === 'PUT') {
+    const body = await request.json().catch(function () { return {}; });
+    const ghBody = {
+      message: 'add image ' + body.path,
+      content: body.content || '',
+      branch: branch,
+    };
+    const r = await fetch(ghContentsUrl(env, body.path), {
+      method: 'PUT',
+      headers: ghHeaders(env, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify(ghBody),
+    });
+    if (!r.ok) return json({ ok: false, status: r.status, errmsg: 'github put image failed' }, r.status);
+    const j = await r.json();
+    return json({ ok: true, sha: j && j.content && j.content.sha });
+  }
+  if (request.method === 'DELETE') {
+    const body = await request.json().catch(function () { return {}; });
+    const getR = await fetch(ghContentsUrl(env, body.path) + '?ref=' + branch, { headers: ghHeaders(env) });
+    if (!getR.ok) return json({ ok: false, status: getR.status, errmsg: 'get before delete failed' }, getR.status);
+    const f = await getR.json();
+    const r = await fetch(ghContentsUrl(env, body.path), {
+      method: 'DELETE',
+      headers: ghHeaders(env, { 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ message: 'del image ' + body.path, sha: f.sha, branch: branch }),
+    });
+    if (!r.ok) return json({ ok: false, status: r.status, errmsg: 'github delete image failed' }, r.status);
+    return json({ ok: true });
+  }
+  return json({ ok: false, errmsg: 'method not allowed' }, 405);
+}
+
+async function handleWeread(request, env) {
+  const TARGET = 'https://i.weread.qq.com/api/agent/gateway';
+  const body = await request.text().catch(function () { return ''; });
+  const upstream = await fetch(TARGET, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + (env.WEREAD_KEY || ''), 'Content-Type': 'application/json' },
+    body: body,
+  });
+  const respBody = await upstream.text();
+  return new Response(respBody, {
+    status: upstream.status,
+    headers: { 'Content-Type': upstream.headers.get('Content-Type') || 'application/json' },
+  });
+}
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const origin = request.headers.get('Origin');
-    const allowOrigin = origin && origin !== 'null' ? origin : '*';
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': allowOrigin,
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-      'Access-Control-Max-Age': '86400',
-      'Vary': 'Origin',
-    };
+    const cors = makeCors(origin);
+    if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
 
-    // 预检请求
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: corsHeaders });
-    }
+    const url = new URL(request.url);
+    const p = url.pathname;
 
-    if (request.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ errcode: -1, errmsg: 'Only POST allowed' }),
-        { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 校验浏览器带来的鉴权头（防止空 Key 滥用）
-    const auth = request.headers.get('Authorization') || '';
-    if (!auth.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ errcode: -2, errmsg: 'Missing Authorization Bearer' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 透传 body 与鉴权头到微信读书网关
-    let body;
-    try {
-      body = await request.text();
-    } catch (e) {
-      return new Response(
-        JSON.stringify({ errcode: -3, errmsg: 'Bad request body' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    let upstream;
-    try {
-      upstream = await fetch(TARGET, {
-        method: 'POST',
-        headers: {
-          'Authorization': auth,
-          'Content-Type': 'application/json',
-        },
-        body,
+    if (!checkGate(request, env)) {
+      return new Response(JSON.stringify({ ok: false, errmsg: 'app key invalid' }), {
+        status: 401, headers: Object.assign({}, cors, { 'Content-Type': 'application/json' }),
       });
-    } catch (e) {
-      return new Response(
-        JSON.stringify({ errcode: -4, errmsg: 'Upstream error: ' + e.message }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    const respBody = await upstream.text();
-    return new Response(respBody, {
-      status: upstream.status,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': upstream.headers.get('Content-Type') || 'application/json',
-      },
-    });
+    try {
+      if (p === '/api/data') return withCors(await handleData(request, env), cors);
+      if (p === '/api/image') return withCors(await handleImage(request, env), cors);
+      if (p === '/api/weread') return withCors(await handleWeread(request, env), cors);
+      if (p === '/' || p === '/health') return withCors(json({ ok: true, github: !!env.GITHUB_PAT, weread: !!env.WEREAD_KEY }), cors);
+      return withCors(json({ ok: false, errmsg: 'not found' }, 404), cors);
+    } catch (e) {
+      return withCors(json({ ok: false, errmsg: 'worker error: ' + e.message }), 500);
+    }
   },
 };
