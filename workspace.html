@@ -597,6 +597,13 @@
             <button class="btn btn-primary btn-small" id="saveWereadBtn">保存配置</button>
             <button class="btn btn-small btn-danger" id="clearWereadBtn">清除配置</button>
           </div>
+          <div class="weread-sync-inline">
+            <div>
+              <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
+              <div class="weread-sync-meta" id="wereadSyncMeta">首次使用请先在「设置」里保存 Key 和 Worker 地址</div>
+            </div>
+            <button class="btn btn-primary btn-small" id="wereadSyncBtn">立即同步</button>
+          </div>
         </div>
 
         <div class="card">
@@ -610,17 +617,6 @@
       <section class="section" id="reading">
         <div class="section-header">
           <h2 class="section-title">阅读</h2>
-        </div>
-
-        <!-- 同步状态条（常驻 Tab 上方） -->
-        <div class="card weread-sync-card">
-          <div class="weread-sync-bar">
-            <div>
-              <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
-              <div class="weread-sync-meta" id="wereadSyncMeta">首次使用请先在「设置」里保存 Key 和 Worker 地址</div>
-            </div>
-            <button class="btn btn-primary btn-small" id="wereadSyncBtn">立即同步</button>
-          </div>
         </div>
 
         <!-- Tab 切换 -->
@@ -724,7 +720,7 @@
         </div>
 
         <div class="card" id="readStatsEmpty">
-          <div class="empty-state">暂无微信读书数据，配置好 Key 后点击上方「立即同步」即可生成你的专属阅读报告。</div>
+          <div class="empty-state">暂无微信读书数据，配置好 Key 后到「设置」页点击「立即同步」即可生成你的专属阅读报告。</div>
         </div>
         </div>
 
@@ -961,6 +957,7 @@
   .weread-sync-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
   .weread-sync-status{font-weight:700;font-size:15px;color:var(--text);}
   .weread-sync-meta{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+  .weread-sync-inline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
   .read-stats-row{grid-template-columns:repeat(3,1fr);}
   @media (min-width:640px){ .read-stats-row{grid-template-columns:repeat(6,1fr);} }
   .read-section-title{font-size:14px;font-weight:700;color:var(--text);margin:18px 0 10px;}
@@ -1170,9 +1167,6 @@
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  /* 同步状态条 */
-  .weread-sync-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
   /* ===== 书架筛选 pills ===== */
   .bookshelf-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -1797,8 +1791,7 @@
   function deleteReadingPlan(id){ state.readingPlans = state.readingPlans.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
 
   // ===== 阅读 =====
-  function renderReading() {
-    // 同步入口状态
+  function updateWereadSyncUI() {
     var hasCfg = isWereadKeySet() && getWereadWorkerUrl();
     var syncedAt = state.settings && state.settings.wereadSyncedAt;
     var hasData = state.books && state.books.length > 0;
@@ -1810,6 +1803,11 @@
     setText('wereadSyncMeta', meta);
     var syncBtn = document.getElementById('wereadSyncBtn');
     if (syncBtn) syncBtn.onclick = function(){ wrapPromise(syncWeread()).then(loadAll); };
+  }
+
+  function renderReading() {
+    // 同步入口状态（入口已移入「设置」页，这里仍负责刷新状态文案）
+    updateWereadSyncUI();
 
     // 统计报告
     var statsCard = document.getElementById('readStatsCard');
@@ -2435,6 +2433,7 @@
       else if (wu) { ws.textContent = '已填 Worker 地址，缺少 Key'; ws.classList.remove('ok'); }
       else { ws.textContent = '未设置'; ws.classList.remove('ok'); }
     }
+    updateWereadSyncUI();
   }
 
   function moveModule(idx, dir) {
