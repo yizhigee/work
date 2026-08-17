@@ -625,31 +625,78 @@
         </div>
 
         <!-- 阅读统计报告 -->
-        <div class="card" id="readStatsCard" style="display:none;">
-          <div class="card-title">阅读报告</div>
-          <div class="stats-row read-stats-row">
-            <div class="stat-card"><div class="stat-num" id="rsTotalTime">0</div><div class="stat-label">总时长</div></div>
-            <div class="stat-card green"><div class="stat-num" id="rsReadDays">0</div><div class="stat-label">阅读天数</div></div>
-            <div class="stat-card yellow"><div class="stat-num" id="rsBookCount">0</div><div class="stat-label">读过本数</div></div>
-            <div class="stat-card"><div class="stat-num" id="rsFinishedCount">0</div><div class="stat-label">已读完</div></div>
-            <div class="stat-card green"><div class="stat-num" id="rsNoteCount">0</div><div class="stat-label">笔记数</div></div>
-            <div class="stat-card yellow"><div class="stat-num" id="rsStreakDays">0</div><div class="stat-label">连续天数</div></div>
+        <div class="read-report-card" id="readStatsCard" style="display:none;">
+          <div class="rr-header">
+            <div class="rr-year" id="rsYear">2026</div>
+            <div class="rr-title">年度阅读报告</div>
+            <div class="rr-subtitle">来自微信读书 · 同步于 <span id="rsSyncTime">--</span></div>
           </div>
 
-          <div class="read-section-title">阅读时长 TOP10</div>
-          <div id="rsTop10List"></div>
+          <div class="rr-kpi-grid">
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsTotalTime">0</div>
+              <div class="rr-kpi-label">阅读时长</div>
+            </div>
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsReadDays">0</div>
+              <div class="rr-kpi-label">阅读天数</div>
+            </div>
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsBookCount">0</div>
+              <div class="rr-kpi-label">读过本数</div>
+            </div>
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsFinishedCount">0</div>
+              <div class="rr-kpi-label">已读完</div>
+            </div>
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsNoteCount">0</div>
+              <div class="rr-kpi-label">笔记数</div>
+            </div>
+            <div class="rr-kpi">
+              <div class="rr-kpi-num" id="rsStreakDays">0</div>
+              <div class="rr-kpi-label">连续天数</div>
+            </div>
+          </div>
 
-          <div class="read-section-title">偏好分类</div>
-          <div id="rsCategoryList"></div>
+          <div class="rr-progress">
+            <div class="rr-progress-bar">
+              <div class="rr-progress-fill" id="rsProgressFill"></div>
+            </div>
+            <div class="rr-progress-legend" id="rsProgressLegend"></div>
+          </div>
 
-          <div class="read-section-title">历年阅读趋势</div>
-          <div class="read-trend-chart" id="rsTrendChart"></div>
+          <div class="rr-columns">
+            <div class="rr-col">
+              <div class="rr-section-title">
+                <span class="rr-icon">🏆</span> 读书排行 TOP10
+              </div>
+              <div class="rr-top10" id="rsTop10List"></div>
+            </div>
+            <div class="rr-col">
+              <div class="rr-section-title">
+                <span class="rr-icon">📚</span> 偏好分类
+              </div>
+              <div class="rr-categories" id="rsCategoryList"></div>
 
-          <div class="read-section-title">阅读进度分布</div>
-          <div class="read-dist-row" id="rsDistRow"></div>
+              <div class="rr-section-title" style="margin-top:22px;">
+                <span class="rr-icon">📈</span> 历年趋势
+              </div>
+              <div class="rr-trend" id="rsTrendChart"></div>
+            </div>
+          </div>
 
-          <div class="read-section-title">常读作者</div>
-          <div id="rsAuthorList"></div>
+          <div class="rr-achievements">
+            <div class="rr-section-title" style="margin-top:0;">
+              <span class="rr-icon">🌟</span> 累计成就
+            </div>
+            <div class="rr-ach-grid" id="rsAchievements"></div>
+          </div>
+
+          <div class="rr-section-title">
+            <span class="rr-icon">✍️</span> 偏好作者
+          </div>
+          <div class="rr-authors" id="rsAuthorList"></div>
         </div>
 
         <div class="card" id="readStatsEmpty">
@@ -914,6 +961,129 @@
   .book-cover{width:48px;height:68px;object-fit:cover;border-radius:6px;background:var(--primary-light);flex:0 0 48px;}
   .book-main{flex:1;min-width:0;}
   .book-card.weread{display:flex;gap:12px;align-items:flex-start;}
+
+  /* ===== 微信读书年度阅读报告 ===== */
+  .read-report-card{
+    background: linear-gradient(160deg, #1B1735 0%, #221D42 50%, #2A224E 100%);
+    border-radius: 22px; padding: 26px 22px 30px; margin-bottom: 16px;
+    color: #F0EEF8; box-shadow: 0 16px 40px rgba(75, 50, 130, 0.22);
+  }
+  .rr-header{ margin-bottom: 24px; }
+  .rr-year{
+    font-size: 46px; font-weight: 900; line-height: 1;
+    background: linear-gradient(90deg, #F472B6, #A78BFA); -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: -1px;
+  }
+  .rr-title{ font-size: 20px; font-weight: 800; margin-top: 6px; color: #fff; }
+  .rr-subtitle{ font-size: 12px; color: #9C96B8; margin-top: 4px; }
+  .rr-kpi-grid{
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px;
+  }
+  .rr-kpi{
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 16px 10px; text-align: center;
+    backdrop-filter: blur(4px);
+  }
+  .rr-kpi-num{
+    font-size: 28px; font-weight: 900; color: #fff; line-height: 1.1;
+    background: linear-gradient(180deg, #fff 0%, #C4B9FF 100%); -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .rr-kpi-label{ font-size: 12px; color: #9C96B8; margin-top: 6px; }
+  .rr-progress{
+    background: rgba(255,255,255,0.05); border-radius: 16px; padding: 18px 16px;
+    margin-bottom: 24px;
+  }
+  .rr-progress-bar{
+    height: 28px; border-radius: 14px; background: rgba(255,255,255,0.08);
+    overflow: hidden; display: flex;
+  }
+  .rr-progress-seg{
+    height: 100%; position: relative; transition: width .6s ease;
+  }
+  .rr-progress-seg.done{ background: linear-gradient(90deg, #F472B6, #EC4899); }
+  .rr-progress-seg.reading{ background: linear-gradient(90deg, #A78BFA, #8B5CF6); }
+  .rr-progress-seg.want{ background: linear-gradient(90deg, #60A5FA, #3B82F6); }
+  .rr-progress-seg.start{ background: linear-gradient(90deg, #34D399, #10B981); }
+  .rr-progress-seg.half{ background: linear-gradient(90deg, #FBBF24, #F59E0B); }
+  .rr-progress-seg.near{ background: linear-gradient(90deg, #FB923C, #F97316); }
+  .rr-progress-legend{
+    display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; font-size: 12px; color: #C8C2DD;
+  }
+  .rr-legend-dot{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .rr-columns{
+    display: grid; grid-template-columns: 1fr; gap: 22px; margin-bottom: 24px;
+  }
+  @media (min-width:900px){ .rr-columns{ grid-template-columns: 1.1fr 0.9fr; } }
+  .rr-section-title{
+    font-size: 15px; font-weight: 800; color: #fff; margin: 0 0 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .rr-icon{ font-size: 15px; line-height: 1; }
+  .rr-top10{ display: flex; flex-direction: column; gap: 10px; }
+  .rr-rank{
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.05); border-radius: 14px; padding: 12px 13px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .rr-rank-num{
+    width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #B8B3CC; background: rgba(255,255,255,0.08); flex: 0 0 24px;
+  }
+  .rr-rank-num.top1{ background: linear-gradient(135deg, #FDE68A, #F59E0B); color: #4A3B00; }
+  .rr-rank-num.top2{ background: linear-gradient(135deg, #E5E7EB, #9CA3AF); color: #374151; }
+  .rr-rank-num.top3{ background: linear-gradient(135deg, #FBCFE8, #F472B6); color: #831843; }
+  .rr-rank-info{ flex: 1; min-width: 0; }
+  .rr-rank-title{
+    font-size: 14px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rr-rank-meta{ font-size: 11px; color: #9C96B8; margin-top: 2px; }
+  .rr-rank-time{
+    font-size: 13px; font-weight: 800; color: #F0A8D0; flex: 0 0 auto; text-align: right;
+  }
+  .rr-categories{ display: flex; flex-direction: column; gap: 10px; }
+  .rr-cat{
+    display: grid; grid-template-columns: 1fr 60px; align-items: center; gap: 8px;
+  }
+  .rr-cat-row{ display: flex; align-items: center; gap: 8px; }
+  .rr-cat-name{ font-size: 13px; color: #E8E4F0; font-weight: 600; flex: 0 0 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr-cat-track{ flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .rr-cat-fill{ height: 100%; border-radius: 4px; background: linear-gradient(90deg, #A78BFA, #F472B6); transition: width .5s ease; }
+  .rr-cat-meta{ font-size: 11px; color: #9C96B8; text-align: right; }
+  .rr-trend{
+    display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 8px 0 22px; position: relative;
+  }
+  .rr-trend-bar{
+    flex: 1; border-radius: 6px 6px 0 0; min-height: 4px;
+    background: linear-gradient(180deg, #F472B6, #A78BFA); opacity: .9;
+    position: relative; transition: height .4s ease;
+  }
+  .rr-trend-bar:hover{ opacity: 1; }
+  .rr-trend-val{ position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #F0EEF8; white-space: nowrap; }
+  .rr-trend-label{ position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #9C96B8; white-space: nowrap; }
+  .rr-achievements{
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px; padding: 18px 16px; margin-bottom: 24px;
+  }
+  .rr-ach-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .rr-ach{ text-align: center; }
+  .rr-ach-num{ font-size: 24px; font-weight: 900; color: #FDE68A; line-height: 1; }
+  .rr-ach-label{ font-size: 12px; color: #9C96B8; margin-top: 5px; }
+  .rr-authors{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .rr-author{
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.05); border-radius: 12px; padding: 11px 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .rr-author-avatar{
+    width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A78BFA, #F472B6);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex: 0 0 34px;
+  }
+  .rr-author-info{ flex: 1; min-width: 0; }
+  .rr-author-name{ font-size: 13px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr-author-meta{ font-size: 11px; color: #9C96B8; margin-top: 1px; }
 
   /* 云端同步 Token 状态 + 首次粘贴模态框 */
   .token-status{font-weight:600;color:var(--red);}
@@ -1458,12 +1628,40 @@
     if (hasData && state.readStats) {
       statsCard.style.display = 'block'; statsEmpty.style.display = 'none';
       var s = state.readStats;
+      var syncedAt = state.settings && state.settings.wereadSyncedAt;
+      var reportYear = syncedAt ? new Date(syncedAt).getFullYear() : new Date().getFullYear();
+      setText('rsYear', reportYear);
+      setText('rsSyncTime', syncedAt ? (fmtDate(syncedAt) + ' ' + new Date(syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})) : '刚刚');
+
       setText('rsTotalTime', fmtReadTime(s.totalReadTime || s.totalTime || 0));
       setText('rsReadDays', s.readDays || 0);
       setText('rsBookCount', s.bookCount || state.books.length || 0);
       setText('rsFinishedCount', s.finishedCount || state.books.filter(function(b){ return b.status === '读完'; }).length || 0);
       setText('rsNoteCount', s.noteCount || state.notebooks.reduce(function(sum, n){ return sum + (n.noteCount || 0); }, 0));
       setText('rsStreakDays', s.continuousDays || s.streakDays || 0);
+
+      // 主进度条：按阅读进度分布分段
+      var dist = s.progressDistribution || s.progressDist || {};
+      if (!Object.keys(dist).length) {
+        dist = { '未开始':0, '刚开始':0, '阅读中':0, '过半':0, '接近读完':0, '已读完':0 };
+        state.books.forEach(function(b){ dist[fmtReadDist(b.progress || 0)]++; });
+      }
+      var segOrder = ['已读完','接近读完','过半','阅读中','刚开始','未开始'];
+      var segClass = { '已读完':'done','接近读完':'near','过半':'half','阅读中':'reading','刚开始':'start','未开始':'want' };
+      var segColor = { '已读完':'#F472B6','接近读完':'#F97316','过半':'#F59E0B','阅读中':'#8B5CF6','刚开始':'#10B981','未开始':'#3B82F6' };
+      var total = state.books.length || 1;
+      var bar = document.getElementById('rsProgressFill'); bar.innerHTML = '';
+      var legend = document.getElementById('rsProgressLegend'); legend.innerHTML = '';
+      segOrder.forEach(function(k){
+        var v = dist[k] || 0; if (!v) return;
+        var pct = (v / total * 100).toFixed(1);
+        var seg = document.createElement('div'); seg.className = 'rr-progress-seg ' + segClass[k]; seg.style.width = pct + '%';
+        seg.title = k + ' ' + v + ' 本 (' + pct + '%)';
+        bar.appendChild(seg);
+        var leg = document.createElement('div'); leg.className = 'rr-legend-item';
+        leg.innerHTML = '<span class="rr-legend-dot" style="background:' + segColor[k] + '"></span>' + escapeHtml(k) + ' ' + v;
+        legend.appendChild(leg);
+      });
 
       // TOP10
       var top10 = (s.topBooks || s.top10 || s.bookRankings || state.books.slice().sort(function(a,b){ return (b.readTime||0)-(a.readTime||0); })).slice(0, 10);
@@ -1472,21 +1670,30 @@
       if (!top10.length) top10List.innerHTML = '<div class="empty-state">暂无排行数据</div>';
       top10.forEach(function(b, i){
         var title = b.title || b.bookName || '未命名'; var t = b.readTime || b.totalReadTime || 0;
-        var el = document.createElement('div'); el.className = 'rank-item';
-        el.innerHTML = '<div class="rank-num ' + (i < 3 ? 'top' : '') + '">' + (i + 1) + '</div><div class="rank-info"><div class="rank-title">' + escapeHtml(title) + '</div><div class="rank-meta">' + escapeHtml(b.author || '') + '</div></div><div class="rank-time">' + fmtReadTime(t) + '</div>';
+        var el = document.createElement('div'); el.className = 'rr-rank';
+        var rankCls = 'rr-rank-num ' + (i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '');
+        el.innerHTML = '<div class="' + rankCls + '">' + (i + 1) + '</div>'
+          + '<div class="rr-rank-info"><div class="rr-rank-title" title="' + escapeHtml(title) + '">' + escapeHtml(title) + '</div>'
+          + '<div class="rr-rank-meta">' + escapeHtml(b.author || '') + '</div></div>'
+          + '<div class="rr-rank-time">' + fmtReadTime(t) + '</div>';
         top10List.appendChild(el);
       });
 
-      // 偏好分类
+      // 偏好分类：横向进度条
       var cats = s.categories || s.categoryStats || [];
       var catList = document.getElementById('rsCategoryList');
       catList.innerHTML = '';
-      if (!cats.length) catList.innerHTML = '<span class="category-item">暂无分类数据</span>';
+      if (!cats.length) catList.innerHTML = '<div class="empty-state">暂无分类数据</div>';
+      var catMax = Math.max.apply(null, cats.map(function(c){ return c.readTime || c.totalReadTime || 0; })) || 1;
       cats.forEach(function(c){
         var name = c.category || c.name || '其他';
-        var pill = document.createElement('span'); pill.className = 'category-item';
-        pill.textContent = name + ' · ' + (c.count || 0) + ' 本 · ' + fmtReadTime(c.readTime || c.totalReadTime || 0);
-        catList.appendChild(pill);
+        var t = c.readTime || c.totalReadTime || 0;
+        var pct = Math.round((t / catMax) * 100);
+        var el = document.createElement('div'); el.className = 'rr-cat';
+        el.innerHTML = '<div class="rr-cat-row"><div class="rr-cat-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</div>'
+          + '<div class="rr-cat-track"><div class="rr-cat-fill" style="width:' + pct + '%"></div></div></div>'
+          + '<div class="rr-cat-meta">' + (c.count || 0) + ' 本 · ' + fmtReadTime(t) + '</div>';
+        catList.appendChild(el);
       });
 
       // 历年趋势
@@ -1499,36 +1706,42 @@
         var max = Math.max.apply(null, yearly.map(function(y){ return y.readTime || y.totalReadTime || 0; })) || 1;
         yearly.forEach(function(y){
           var t = y.readTime || y.totalReadTime || 0; var h = Math.round((t / max) * 100);
-          var bar = document.createElement('div'); bar.className = 'trend-bar'; bar.style.height = h + '%';
-          bar.innerHTML = '<div class="trend-val">' + Math.round(t/3600) + 'h</div><div class="trend-label">' + (y.year || '') + '</div>';
+          var bar = document.createElement('div'); bar.className = 'rr-trend-bar'; bar.style.height = h + '%';
+          bar.innerHTML = '<div class="rr-trend-val">' + Math.round(t/3600) + 'h</div><div class="rr-trend-label">' + (y.year || '') + '</div>';
           trendChart.appendChild(bar);
         });
       }
 
-      // 进度分布
-      var dist = s.progressDistribution || s.progressDist || {};
-      if (!Object.keys(dist).length) {
-        dist = { '未开始':0, '刚开始':0, '阅读中':0, '过半':0, '接近读完':0, '已读完':0 };
-        state.books.forEach(function(b){ dist[fmtReadDist(b.progress || 0)]++; });
-      }
-      var distRow = document.getElementById('rsDistRow');
-      distRow.innerHTML = '';
-      Object.keys(dist).forEach(function(k){
-        var pill = document.createElement('div'); pill.className = 'dist-pill';
-        pill.innerHTML = '<div class="dist-label">' + escapeHtml(k) + '</div><div class="dist-num">' + (dist[k] || 0) + '</div>';
-        distRow.appendChild(pill);
+      // 累计成就
+      var ach = document.getElementById('rsAchievements'); ach.innerHTML = '';
+      var totalH = Math.round((s.totalReadTime || s.totalTime || 0) / 3600);
+      var finished = s.finishedCount || state.books.filter(function(b){ return b.status === '读完'; }).length || 0;
+      var notes = s.noteCount || state.notebooks.reduce(function(sum, n){ return sum + (n.noteCount || 0); }, 0);
+      var achData = [
+        { num: totalH, label: '累计阅读小时' },
+        { num: state.books.length, label: '读过书籍' },
+        { num: notes, label: '留下笔记' }
+      ];
+      achData.forEach(function(a){
+        var el = document.createElement('div'); el.className = 'rr-ach';
+        el.innerHTML = '<div class="rr-ach-num">' + a.num + '</div><div class="rr-ach-label">' + a.label + '</div>';
+        ach.appendChild(el);
       });
 
-      // 作者统计
+      // 偏好作者
       var authors = s.authors || s.authorStats || [];
       var authorList = document.getElementById('rsAuthorList');
       authorList.innerHTML = '';
-      if (!authors.length) authorList.innerHTML = '<span class="empty-state">暂无作者数据</span>';
-      authors.slice(0, 20).forEach(function(a){
-        var name = a.author || a.name || '佚名'; var count = a.count || a.bookCount || 0;
-        var pill = document.createElement('span'); pill.className = 'author-item';
-        pill.textContent = name + ' · ' + count + ' 本';
-        authorList.appendChild(pill);
+      if (!authors.length) authorList.innerHTML = '<div class="empty-state">暂无作者数据</div>';
+      authors.slice(0, 10).forEach(function(a, i){
+        var name = a.author || a.name || '佚名';
+        var count = a.count || a.bookCount || 0;
+        var t = a.readTime || a.totalReadTime || 0;
+        var el = document.createElement('div'); el.className = 'rr-author';
+        el.innerHTML = '<div class="rr-author-avatar">' + (name ? name.slice(0,1) : 'A') + '</div>'
+          + '<div class="rr-author-info"><div class="rr-author-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</div>'
+          + '<div class="rr-author-meta">' + count + ' 本 · ' + fmtReadTime(t) + '</div></div>';
+        authorList.appendChild(el);
       });
     } else {
       statsCard.style.display = 'none'; statsEmpty.style.display = 'block';
