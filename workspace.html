@@ -358,6 +358,31 @@
               <span class="label">打卡日历</span>
               <span class="hint">查看全年坚持轨迹</span>
             </div>
+            <div class="quick-card" data-target="reading">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              <span class="label">我的书架</span>
+              <span class="hint">记录想读在读读完</span>
+            </div>
+            <div class="quick-card" data-target="fitness">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span class="label">健身记录</span>
+              <span class="hint">记录每次训练</span>
+            </div>
+            <div class="quick-card" data-target="anniversaries">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              <span class="label">纪念日</span>
+              <span class="hint">记住重要日子</span>
+            </div>
+            <div class="quick-card" data-target="notes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <span class="label">写随笔</span>
+              <span class="hint">记录此刻心情</span>
+            </div>
+            <div class="quick-card" data-target="stats">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              <span class="label">数据统计</span>
+              <span class="hint">看看坚持的轨迹</span>
+            </div>
           </div>
         </div>
 
@@ -534,7 +559,7 @@
 
         <div class="card">
           <div class="card-title">板块顺序</div>
-          <p class="card-hint">调整首页 / 打卡 / 待办 / 番茄钟 / 设置 的排列顺序（点 ▲ ▼ 上下移动）。</p>
+          <p class="card-hint">调整首页 / 打卡 / 待办 / 番茄钟 / 阅读 / 健身 / 纪念日 / 随笔 / 统计 / 设置的排列顺序（点 ▲ ▼ 上下移动）。</p>
           <div id="moduleOrderList"></div>
         </div>
 
@@ -546,13 +571,231 @@
 
         <div class="card">
           <div class="card-title">数据管理</div>
-          <p class="card-hint">清空将删除全部打卡、待办、专注记录与习惯，不可恢复。</p>
+          <p class="card-hint">清空将删除全部打卡、待办、专注、阅读、健身、纪念日与随笔数据，不可恢复。</p>
           <button class="btn btn-danger" id="clearDataBtn">一键清空全部数据</button>
+        </div>
+      </section>
+
+      <!-- 阅读 -->
+      <section class="section" id="reading">
+        <div class="section-header">
+          <h2 class="section-title">阅读</h2>
+        </div>
+        <div class="card">
+          <div class="stats-row">
+            <div class="stat-card"><div class="stat-num" id="readWant">0</div><div class="stat-label">想读</div></div>
+            <div class="stat-card green"><div class="stat-num" id="readDoing">0</div><div class="stat-label">在读</div></div>
+            <div class="stat-card yellow"><div class="stat-num" id="readDone">0</div><div class="stat-label">读完</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">添加书籍</div>
+          <form id="addReadingForm">
+            <div class="form-row">
+              <input type="text" name="rTitle" placeholder="书名" required class="flex-1">
+              <input type="text" name="rAuthor" placeholder="作者" class="flex-1">
+            </div>
+            <div class="form-row">
+              <select name="rStatus" class="flex-1">
+                <option value="想读">想读</option>
+                <option value="在读">在读</option>
+                <option value="读完">读完</option>
+              </select>
+              <input type="number" name="rProgress" min="0" max="100" value="0" placeholder="进度%" class="flex-1">
+            </div>
+            <button type="submit" class="btn btn-primary full-width">添加到书架</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">我的书架</div>
+          <div id="readingList"></div>
+          <div class="empty-state" id="readingEmpty">书架空空如也，去添加一本书吧～</div>
+        </div>
+      </section>
+
+      <!-- 健身 -->
+      <section class="section" id="fitness">
+        <div class="section-header">
+          <h2 class="section-title">健身</h2>
+        </div>
+        <div class="card">
+          <div class="stats-row">
+            <div class="stat-card"><div class="stat-num" id="fitWeekCount">0</div><div class="stat-label">本周次数</div></div>
+            <div class="stat-card green"><div class="stat-num" id="fitMonthMinutes">0</div><div class="stat-label">本月(分)</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">记录一次训练</div>
+          <form id="addFitnessForm">
+            <div class="form-row">
+              <input type="date" name="fDate" class="flex-1" required>
+              <select name="fType" class="flex-1"></select>
+            </div>
+            <div class="form-row">
+              <input type="number" name="fMinutes" min="0" placeholder="时长(分钟)" class="flex-1">
+              <input type="text" name="fNote" placeholder="备注（可选）" class="flex-1">
+            </div>
+            <div class="form-row">
+              <input type="file" name="fImage" accept="image/*" class="flex-1">
+            </div>
+            <div class="img-preview" id="fitImgPrev" style="display:none;"></div>
+            <button type="submit" class="btn btn-primary full-width">保存训练</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">训练记录</div>
+          <div id="fitnessList"></div>
+          <div class="empty-state" id="fitnessEmpty">还没有训练记录，动起来吧～</div>
+        </div>
+      </section>
+
+      <!-- 纪念日 -->
+      <section class="section" id="anniversaries">
+        <div class="section-header">
+          <h2 class="section-title">纪念日</h2>
+        </div>
+        <div class="card">
+          <div class="card-title">新增纪念日</div>
+          <form id="addAnniversaryForm">
+            <div class="form-row">
+              <input type="text" name="aTitle" placeholder="名称，例如：在一起" required class="flex-1">
+              <input type="date" name="aDate" class="flex-1" required>
+            </div>
+            <div class="form-row">
+              <select name="aType" class="flex-1"></select>
+              <input type="text" name="aNote" placeholder="备注（可选）" class="flex-1">
+            </div>
+            <button type="submit" class="btn btn-primary full-width">添加纪念日</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">纪念日列表</div>
+          <div id="anniversaryList"></div>
+          <div class="empty-state" id="anniversaryEmpty">还没有纪念日，添加一个重要的日子吧～</div>
+        </div>
+      </section>
+
+      <!-- 随笔 -->
+      <section class="section" id="notes">
+        <div class="section-header">
+          <h2 class="section-title">随笔</h2>
+        </div>
+        <div class="card">
+          <div class="card-title">写点什么</div>
+          <form id="addNoteForm">
+            <div class="form-row">
+              <input type="text" name="nTitle" placeholder="标题（可选）" class="flex-1">
+              <select name="nMood" class="flex-1"></select>
+            </div>
+            <div class="form-row">
+              <textarea name="nContent" placeholder="今天想记录点什么…" rows="4" class="flex-1"></textarea>
+            </div>
+            <div class="form-row">
+              <input type="file" name="nImages" accept="image/*" multiple class="flex-1">
+            </div>
+            <div class="img-preview" id="noteImgPrev" style="display:none;"></div>
+            <button type="submit" class="btn btn-primary full-width">保存随笔</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">我的随笔</div>
+          <div id="noteList"></div>
+          <div class="empty-state" id="noteEmpty">还没有随笔，写下第一篇吧～</div>
+        </div>
+      </section>
+
+      <!-- 统计 -->
+      <section class="section" id="stats">
+        <div class="section-header">
+          <h2 class="section-title">统计</h2>
+        </div>
+        <div class="card">
+          <div class="card-title">数据总览</div>
+          <div class="stat-grid" id="statOverview"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">打卡与专注</div>
+          <div class="bar-row"><span class="bar-label">累计打卡</span><div class="bar-track"><div class="bar-fill" id="barRecords"></div></div><span class="bar-val" id="valRecords">0</span></div>
+          <div class="bar-row"><span class="bar-label">累计专注(分)</span><div class="bar-track"><div class="bar-fill green" id="barFocus"></div></div><span class="bar-val" id="valFocus">0</span></div>
+          <div class="bar-row"><span class="bar-label">当前连续(天)</span><div class="bar-track"><div class="bar-fill yellow" id="barStreak"></div></div><span class="bar-val" id="valStreak">0</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">阅读状态分布</div>
+          <div class="bar-row"><span class="bar-label">想读</span><div class="bar-track"><div class="bar-fill" id="barWant"></div></div><span class="bar-val" id="valWant">0</span></div>
+          <div class="bar-row"><span class="bar-label">在读</span><div class="bar-track"><div class="bar-fill green" id="barDoing"></div></div><span class="bar-val" id="valDoing">0</span></div>
+          <div class="bar-row"><span class="bar-label">读完</span><div class="bar-track"><div class="bar-fill yellow" id="barDone"></div></div><span class="bar-val" id="valDone">0</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">健身类型分布</div>
+          <div id="statFitness"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">即将到来的纪念日</div>
+          <div id="statAnniversaries"></div>
         </div>
       </section>
     </main>
   </div>
 </div>
+
+<style>
+  /* ===== 新增模块样式（阅读 / 健身 / 纪念日 / 随笔 / 统计） ===== */
+  .book-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .book-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .book-title{font-weight:700;font-size:15px;color:var(--text);}
+  .book-meta{font-size:12px;color:var(--text-secondary);margin:4px 0 8px;}
+  .progress-bar{height:8px;background:var(--border);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--primary);border-radius:6px;}
+  .book-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+
+  .fit-card{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .fit-thumb-wrap{flex:0 0 64px;}
+  .fit-thumb{width:64px;height:64px;object-fit:cover;border-radius:10px;}
+  .fit-info{flex:1;min-width:0;}
+  .fit-meta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-secondary);margin-bottom:4px;flex-wrap:wrap;}
+  .fit-note{font-size:13px;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+
+  .anno-card{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .anno-info{flex:1;min-width:0;}
+  .anno-title{font-weight:700;font-size:15px;}
+  .anno-meta{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-secondary);margin-top:4px;flex-wrap:wrap;}
+  .anno-days{font-weight:800;font-size:14px;white-space:nowrap;}
+  .days-soon{color:var(--primary);}
+  .days-past{color:var(--text-secondary);}
+  .anno-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .anno-row:last-child{border-bottom:none;}
+
+  .note-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .note-head{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .note-title{font-weight:700;font-size:15px;}
+  .note-date{font-size:12px;color:var(--text-secondary);margin:4px 0 8px;}
+  .note-content{font-size:14px;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+  .note-images{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .note-thumb{width:80px;height:80px;object-fit:cover;border-radius:10px;}
+  .note-actions{display:flex;justify-content:flex-end;margin-top:10px;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .ov-cell{background:var(--bg);border-radius:12px;padding:14px;text-align:center;}
+  .ov-num{font-size:22px;font-weight:800;color:var(--primary);}
+  .ov-label{font-size:12px;color:var(--text-secondary);margin-top:4px;}
+
+  .bar-row{display:flex;align-items:center;gap:10px;margin:10px 0;}
+  .bar-label{width:88px;font-size:13px;color:var(--text-secondary);flex:0 0 88px;}
+  .bar-track{flex:1;height:10px;background:var(--border);border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--primary);border-radius:6px;transition:width .3s;}
+  .bar-fill.green{background:var(--green);}
+  .bar-fill.yellow{background:var(--yellow);}
+  .bar-val{width:40px;text-align:right;font-size:13px;font-weight:700;color:var(--text);flex:0 0 40px;}
+
+  .img-preview{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;}
+  .img-preview img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);}
+
+  .tag.status-want{background:rgba(124,92,255,0.15);color:var(--primary);}
+  .tag.status-doing{background:rgba(52,199,123,0.15);color:var(--green);}
+  .tag.status-done{background:rgba(255,199,64,0.18);color:var(--yellow);}
+
+  @media (min-width:1024px){ .stat-grid{grid-template-columns:repeat(4,1fr);} }
+</style>
 
 <script>
 (function() {
@@ -595,9 +838,17 @@
   var PRIORITY_OPTIONS = ['P0','P1','P2'];
   var TAG_OPTIONS = ['工作','学习','生活','运动','阅读','其他'];
   var FOCUS_TYPE_OPTIONS = ['工作','学习','阅读','运动','其他'];
+  var READ_STATUS_OPTIONS = ['想读','在读','读完'];
+  var FIT_TYPE_OPTIONS = ['力量','有氧','拉伸','瑜伽','跑步','其他'];
+  var ANNO_TYPE_OPTIONS = ['生日','纪念日','节日','其他'];
+  var NOTE_MOOD_OPTIONS = ['平静','开心','疲惫','焦虑','治愈','其他'];
+  var RF_ = { title:'书名', author:'作者', status:'状态', progress:'进度%', note:'笔记', created:'添加日期' };
+  var FITF_ = { date:'日期', type:'项目', minutes:'时长分钟', note:'备注', image:'图片', created:'创建日期' };
+  var ANF_ = { title:'名称', date:'日期', type:'类型', note:'备注', created:'创建日期' };
+  var NOTF_ = { title:'标题', content:'内容', mood:'心情', images:'配图', created:'创建日期' };
 
   var today = todayStr();
-  var state = { habits: [], records: [], todos: [], focus: [], currentSection: 'home', todoFilter: 'all', timer: { total: 25*60, left: 25*60, running: false, interval: null, selectedMin: 25, type: '工作' } };
+  var state = { habits: [], records: [], todos: [], focus: [], reading: [], fitness: [], anniversaries: [], notes: [], currentSection: 'home', todoFilter: 'all', timer: { total: 25*60, left: 25*60, running: false, interval: null, selectedMin: 25, type: '工作' } };
 
   function todayStr() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function pad(n) { return n < 10 ? '0'+n : ''+n; }
@@ -620,6 +871,10 @@
     state.records = ensureArray(data.records).map(withId);
     state.todos = ensureArray(data.todos).map(withId);
     state.focus = ensureArray(data.focus).map(withId);
+    state.reading = ensureArray(data.reading).map(withId);
+    state.fitness = ensureArray(data.fitness).map(withId);
+    state.anniversaries = ensureArray(data.anniversaries).map(withId);
+    state.notes = ensureArray(data.notes).map(withId);
     var s = data.settings || {};
     state.settings = {
       avatar: typeof s.avatar === 'string' ? s.avatar : '',
@@ -666,6 +921,10 @@
       records: state.records,
       todos: state.todos,
       focus: state.focus,
+      reading: state.reading,
+      fitness: state.fitness,
+      anniversaries: state.anniversaries,
+      notes: state.notes,
       settings: state.settings
     };
     var body = {
@@ -740,7 +999,7 @@
       .catch(function(){ showSpinner(false); renderAll(); });
   }
 
-  function renderAll() { renderGreeting(); renderHome(); renderHabits(); renderTodos(); renderFocus(); }
+  function renderAll() { renderGreeting(); renderHome(); renderHabits(); renderTodos(); renderFocus(); renderReading(); renderFitness(); renderAnniversaries(); renderNotes(); renderStats(); }
 
   function renderGreeting() {
     var h = new Date().getHours();
@@ -898,6 +1157,233 @@
     });
   }
 
+  // ===== 图片处理：客户端压缩后上传到仓库 images/ 目录（避免塞进 data.json 撑爆 1MB 上限）=====
+  function compressImage(file, maxDim, quality) {
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){
+        var img = new Image();
+        img.onload = function(){
+          var w = img.width, h = img.height;
+          var scale = Math.min(1, maxDim / Math.max(w, h));
+          var cw = Math.round(w * scale), ch = Math.round(h * scale);
+          var canvas = document.createElement('canvas'); canvas.width = cw; canvas.height = ch;
+          canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = function(){ reject(new Error('image load failed')); };
+        img.src = reader.result;
+      };
+      reader.onerror = function(){ reject(new Error('file read failed')); };
+      reader.readAsDataURL(file);
+    });
+  }
+  function uploadImageToRepo(file) {
+    return compressImage(file, 1280, 0.8).then(function(dataUrl){
+      var b64 = dataUrl.split(',')[1];
+      var ts = new Date();
+      var name = 'images/' + ts.getFullYear() + pad(ts.getMonth()+1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds()) + '-' + Math.random().toString(36).slice(2,6) + '.jpg';
+      var body = { message: 'add image ' + name, content: b64, branch: CONFIG.BRANCH };
+      var headers = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
+      if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+      return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + name, { method:'PUT', headers: headers, body: JSON.stringify(body) })
+        .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return name; });
+    });
+  }
+  function deleteImageFromRepo(path) {
+    if (!path) return Promise.resolve();
+    var headers = { 'Accept':'application/vnd.github+json' };
+    if (isTokenSet()) headers['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+    return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path + '?ref=' + CONFIG.BRANCH, { headers: headers })
+      .then(function(res){ if (!res.ok) return null; return res.json(); })
+      .then(function(file){
+        if (!file || !file.sha) return null;
+        var delHeaders = { 'Accept':'application/vnd.github+json', 'Content-Type':'application/json' };
+        if (isTokenSet()) delHeaders['Authorization'] = 'Bearer ' + CONFIG.GITHUB_TOKEN;
+        return fetch(GITHUB_API + '/repos/' + CONFIG.OWNER + '/' + CONFIG.REPO + '/contents/' + path, { method:'DELETE', headers: delHeaders, body: JSON.stringify({ message:'del image ' + path, sha: file.sha, branch: CONFIG.BRANCH }) });
+      });
+  }
+
+  function setText(id, v){ var el = document.getElementById(id); if (el) el.textContent = v; }
+  function weekStart(){ var d = new Date(); var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function monthStart(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-01'; }
+
+  // ===== 阅读 =====
+  function addReading(title, author, status, progress) {
+    var p = {}; p[RF_.title]=title; p[RF_.author]=author; p[RF_.status]=status; p[RF_.progress]=progress; p[RF_.note]=''; p[RF_.created]=today+'T00:00:00Z'; p._id=genId();
+    state.reading.push(p); return saveToRepo();
+  }
+  function updateReadingStatus(id) {
+    var rec = state.reading.find(function(r){ return r._id === id; }); if (!rec) return;
+    var idx = READ_STATUS_OPTIONS.indexOf(rec[RF_.status]); rec[RF_.status] = READ_STATUS_OPTIONS[(idx + 1) % READ_STATUS_OPTIONS.length];
+    if (rec[RF_.status] === '读完') rec[RF_.progress] = 100;
+    return saveToRepo();
+  }
+  function deleteReading(id){ state.reading = state.reading.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+  function renderReading() {
+    var cnt = { '想读':0, '在读':0, '读完':0 };
+    state.reading.forEach(function(r){ var s = r[RF_.status]; if (cnt[s] !== undefined) cnt[s]++; });
+    setText('readWant', cnt['想读']); setText('readDoing', cnt['在读']); setText('readDone', cnt['读完']);
+    var list = document.getElementById('readingList'); list.innerHTML = '';
+    document.getElementById('readingEmpty').style.display = state.reading.length ? 'none' : 'block';
+    state.reading.slice().sort(function(a,b){ return (b[RF_.created]||'').localeCompare(a[RF_.created]||''); }).forEach(function(r){
+      var st = r[RF_.status];
+      var stClass = st === '想读' ? 'status-want' : st === '在读' ? 'status-doing' : 'status-done';
+      var el = document.createElement('div'); el.className = 'book-card';
+      el.innerHTML = '<div class="book-head"><div class="book-title">' + escapeHtml(r[RF_.title]) + '</div><span class="tag ' + stClass + '">' + escapeHtml(st) + '</span></div>'
+        + '<div class="book-meta">' + escapeHtml(r[RF_.author] || '佚名') + '</div>'
+        + '<div class="progress-bar"><div class="progress-fill" style="width:' + (r[RF_.progress] || 0) + '%"></div></div>'
+        + '<div class="book-actions"><button class="btn btn-small btn-soft act-status">改状态</button><button class="btn btn-small btn-danger act-del">删除</button></div>';
+      el.querySelector('.act-status').onclick = function(){ wrapPromise(updateReadingStatus(r._id)).then(loadAll); };
+      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteReading(r._id)).then(loadAll); };
+      list.appendChild(el);
+    });
+  }
+
+  // ===== 健身 =====
+  function addFitness(date, type, minutes, note, image) {
+    var p = {}; p[FITF_.date]=date; p[FITF_.type]=type; p[FITF_.minutes]=minutes; p[FITF_.note]=note || ''; p[FITF_.image]=image || ''; p[FITF_.created]=today+'T00:00:00Z'; p._id=genId();
+    state.fitness.push(p); return saveToRepo();
+  }
+  function deleteFitness(id) {
+    var rec = state.fitness.find(function(r){ return r._id === id; });
+    var chain = Promise.resolve();
+    if (rec && rec[FITF_.image]) chain = deleteImageFromRepo(rec[FITF_.image]);
+    state.fitness = state.fitness.filter(function(r){ return r._id !== id; });
+    return chain.then(function(){ return saveToRepo(); });
+  }
+  function renderFitness() {
+    var ws = weekStart(), ms = monthStart();
+    var weekCnt = 0, monthMin = 0;
+    state.fitness.forEach(function(r){
+      var d = fmtDate(r[FITF_.date]);
+      if (d >= ws) weekCnt++;
+      if (d >= ms) monthMin += (r[FITF_.minutes] || 0);
+    });
+    setText('fitWeekCount', weekCnt); setText('fitMonthMinutes', monthMin);
+    var list = document.getElementById('fitnessList'); list.innerHTML = '';
+    document.getElementById('fitnessEmpty').style.display = state.fitness.length ? 'none' : 'block';
+    state.fitness.slice().sort(function(a,b){ return (b[FITF_.date]||'').localeCompare(a[FITF_.date]||''); }).forEach(function(r){
+      var img = r[FITF_.image] ? '<img class="fit-thumb" src="' + escapeHtml(r[FITF_.image]) + '" alt="训练配图">' : '';
+      var el = document.createElement('div'); el.className = 'fit-card';
+      el.innerHTML = '<div class="fit-thumb-wrap">' + img + '</div><div class="fit-info"><div class="fit-meta"><span class="tag">' + escapeHtml(r[FITF_.type]) + '</span><span>' + (r[FITF_.minutes] || 0) + ' 分钟</span><span class="time">' + fmtDate(r[FITF_.date]) + '</span></div><div class="fit-note">' + escapeHtml(r[FITF_.note] || '') + '</div></div><button class="btn btn-small btn-danger act-del">删除</button>';
+      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteFitness(r._id)).then(loadAll); };
+      list.appendChild(el);
+    });
+  }
+
+  // ===== 纪念日 =====
+  function addAnniversary(title, date, type, note) {
+    var p = {}; p[ANF_.title]=title; p[ANF_.date]=date; p[ANF_.type]=type; p[ANF_.note]=note || ''; p[ANF_.created]=today+'T00:00:00Z'; p._id=genId();
+    state.anniversaries.push(p); return saveToRepo();
+  }
+  function deleteAnniversary(id){ state.anniversaries = state.anniversaries.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+  function renderAnniversaries() {
+    var list = document.getElementById('anniversaryList'); list.innerHTML = '';
+    document.getElementById('anniversaryEmpty').style.display = state.anniversaries.length ? 'none' : 'block';
+    var arr = state.anniversaries.map(function(r){
+      var d = new Date(r[ANF_.date] + 'T00:00:00');
+      var diff = Math.round((d.getTime() - new Date(today + 'T00:00:00').getTime()) / 86400000);
+      return { r: r, diff: diff };
+    });
+    arr.sort(function(a,b){
+      var aa = a.diff >= 0 ? a.diff : (1000000 - (-a.diff));
+      var bb = b.diff >= 0 ? b.diff : (1000000 - (-b.diff));
+      return aa - bb;
+    });
+    arr.forEach(function(o){
+      var r = o.r, diff = o.diff;
+      var txt = diff >= 0 ? ('还有 ' + diff + ' 天') : ('已过 ' + (-diff) + ' 天');
+      var cls = diff >= 0 ? 'days-soon' : 'days-past';
+      var el = document.createElement('div'); el.className = 'anno-card';
+      el.innerHTML = '<div class="anno-info"><div class="anno-title">' + escapeHtml(r[ANF_.title]) + '</div><div class="anno-meta"><span class="tag">' + escapeHtml(r[ANF_.type]) + '</span><span>' + fmtDate(r[ANF_.date]) + '</span></div></div><div class="anno-days ' + cls + '">' + txt + '</div><button class="btn btn-small btn-danger act-del">删除</button>';
+      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteAnniversary(r._id)).then(loadAll); };
+      list.appendChild(el);
+    });
+  }
+
+  // ===== 随笔 =====
+  function addNote(title, content, mood, images) {
+    var p = {}; p[NOTF_.title]=title; p[NOTF_.content]=content; p[NOTF_.mood]=mood; p[NOTF_.images]=images || []; p[NOTF_.created]=today+'T00:00:00Z'; p._id=genId();
+    state.notes.push(p); return saveToRepo();
+  }
+  function deleteNote(id) {
+    var rec = state.notes.find(function(r){ return r._id === id; });
+    var chain = Promise.resolve();
+    if (rec && rec[NOTF_.images] && rec[NOTF_.images].length) {
+      rec[NOTF_.images].forEach(function(p){ chain = chain.then(function(){ return deleteImageFromRepo(p); }); });
+    }
+    state.notes = state.notes.filter(function(r){ return r._id !== id; });
+    return chain.then(function(){ return saveToRepo(); });
+  }
+  function renderNotes() {
+    var list = document.getElementById('noteList'); list.innerHTML = '';
+    document.getElementById('noteEmpty').style.display = state.notes.length ? 'none' : 'block';
+    state.notes.slice().sort(function(a,b){ return (b[NOTF_.created]||'').localeCompare(a[NOTF_.created]||''); }).forEach(function(r){
+      var imgs = (r[NOTF_.images] || []).map(function(p){ return '<img class="note-thumb" src="' + escapeHtml(p) + '" alt="配图">'; }).join('');
+      var el = document.createElement('div'); el.className = 'note-card';
+      el.innerHTML = '<div class="note-head"><div class="note-title">' + escapeHtml(r[NOTF_.title] || '无标题') + '</div><span class="tag">' + escapeHtml(r[NOTF_.mood]) + '</span></div>'
+        + '<div class="note-date">' + fmtDate(r[NOTF_.created]) + '</div>'
+        + '<div class="note-content">' + escapeHtml(r[NOTF_.content] || '') + '</div>'
+        + (imgs ? '<div class="note-images">' + imgs + '</div>' : '')
+        + '<div class="note-actions"><button class="btn btn-small btn-danger act-del">删除</button></div>';
+      el.querySelector('.act-del').onclick = function(){ wrapPromise(deleteNote(r._id)).then(loadAll); };
+      list.appendChild(el);
+    });
+  }
+
+  // ===== 统计 =====
+  function setBar(barId, valId, val, maxVal) {
+    var el = document.getElementById(barId); if (el) el.style.width = (Math.max(0, Math.min(100, val / maxVal * 100))) + '%';
+    setText(valId, val);
+  }
+  function renderStats() {
+    var ov = document.getElementById('statOverview'); ov.innerHTML = '';
+    var cells = [
+      { n: state.habits.filter(function(h){ return h[HF.enabled]; }).length, l: '习惯' },
+      { n: state.records.filter(function(r){ return r[HR.done]; }).length, l: '累计打卡' },
+      { n: state.todos.length, l: '待办' },
+      { n: state.focus.reduce(function(s,r){ return s + (r[FF.minutes] || 0); }, 0), l: '专注(分)' },
+      { n: state.reading.length, l: '书籍' },
+      { n: state.fitness.length, l: '训练' },
+      { n: state.anniversaries.length, l: '纪念日' },
+      { n: state.notes.length, l: '随笔' }
+    ];
+    cells.forEach(function(c){
+      var d = document.createElement('div'); d.className = 'ov-cell'; d.innerHTML = '<div class="ov-num">' + c.n + '</div><div class="ov-label">' + c.l + '</div>'; ov.appendChild(d);
+    });
+    var recTotal = state.records.filter(function(r){ return r[HR.done]; }).length;
+    var focusTotal = state.focus.reduce(function(s,r){ return s + (r[FF.minutes] || 0); }, 0);
+    var streak = currentStreak();
+    var maxV = Math.max(recTotal, focusTotal, streak, 1);
+    setBar('barRecords', 'valRecords', recTotal, maxV);
+    setBar('barFocus', 'valFocus', focusTotal, maxV);
+    setBar('barStreak', 'valStreak', streak, maxV);
+    var rc = { '想读':0, '在读':0, '读完':0 };
+    state.reading.forEach(function(r){ if (rc[r[RF_.status]] !== undefined) rc[r[RF_.status]]++; });
+    var rmax = Math.max(rc['想读'], rc['在读'], rc['读完'], 1);
+    setBar('barWant', 'valWant', rc['想读'], rmax);
+    setBar('barDoing', 'valDoing', rc['在读'], rmax);
+    setBar('barDone', 'valDone', rc['读完'], rmax);
+    var fb = {}; state.fitness.forEach(function(r){ var t = r[FITF_.type]; fb[t] = (fb[t] || 0) + 1; });
+    var fcont = document.getElementById('statFitness'); fcont.innerHTML = '';
+    var fmax = Math.max.apply(null, Object.keys(fb).map(function(k){ return fb[k]; }).concat([1]));
+    Object.keys(fb).forEach(function(k){
+      var row = document.createElement('div'); row.className = 'bar-row';
+      row.innerHTML = '<span class="bar-label">' + escapeHtml(k) + '</span><div class="bar-track"><div class="bar-fill green" style="width:' + (fb[k] / fmax * 100) + '%"></div></div><span class="bar-val">' + fb[k] + '</span>';
+      fcont.appendChild(row);
+    });
+    if (!Object.keys(fb).length) fcont.innerHTML = '<div class="empty-state">暂无健身记录</div>';
+    var ac = document.getElementById('statAnniversaries'); ac.innerHTML = '';
+    var upcoming = state.anniversaries.map(function(r){ var diff = Math.round((new Date(r[ANF_.date] + 'T00:00:00').getTime() - new Date(today + 'T00:00:00').getTime()) / 86400000); return { r: r, diff: diff }; }).filter(function(o){ return o.diff >= 0; }).sort(function(a,b){ return a.diff - b.diff; }).slice(0, 5);
+    if (!upcoming.length) ac.innerHTML = '<div class="empty-state">暂无即将到来的纪念日</div>';
+    upcoming.forEach(function(o){
+      var el = document.createElement('div'); el.className = 'anno-row';
+      el.innerHTML = '<div><div class="anno-title">' + escapeHtml(o.r[ANF_.title]) + '</div><div class="anno-meta">' + fmtDate(o.r[ANF_.date]) + '</div></div><span class="days-soon">还有 ' + o.diff + ' 天</span>';
+      ac.appendChild(el);
+    });
+  }
+
   function toggleHabit(name, rec, done) {
     if (rec) { wrapPromise(updateCheckRecord(rec._id, done)).then(loadAll); }
     else { wrapPromise(addCheckRecord(name, today, done)).then(loadAll); }
@@ -949,6 +1435,51 @@
       wrapPromise(addTodoRecord(f.todoTitle.value.trim(), f.todoPriority.value, f.todoDue.value, tags)).then(function(){ f.reset(); loadAll(); });
     };
     document.querySelector('input[name="todoDue"]').value = today;
+
+    // ===== 阅读 / 健身 / 纪念日 / 随笔 表单与下拉填充 =====
+    fillSelect(document.querySelector('select[name="fType"]'), FIT_TYPE_OPTIONS);
+    fillSelect(document.querySelector('select[name="aType"]'), ANNO_TYPE_OPTIONS);
+    fillSelect(document.querySelector('select[name="nMood"]'), NOTE_MOOD_OPTIONS);
+    document.querySelector('input[name="fDate"]').value = today;
+    document.querySelector('input[name="aDate"]').value = today;
+
+    document.getElementById('addReadingForm').onsubmit = function(e){
+      e.preventDefault(); var f = e.target;
+      wrapPromise(addReading(f.rTitle.value.trim(), f.rAuthor.value.trim(), f.rStatus.value, parseInt(f.rProgress.value || '0', 10))).then(function(){ f.reset(); loadAll(); });
+    };
+
+    var fitImgPrev = document.getElementById('fitImgPrev');
+    document.querySelector('input[name="fImage"]').onchange = function(e){
+      var f = e.target.files && e.target.files[0];
+      if (!f) { fitImgPrev.style.display = 'none'; return; }
+      compressImage(f, 320, 0.8).then(function(d){ fitImgPrev.innerHTML = '<img src="' + d + '">'; fitImgPrev.style.display = 'flex'; });
+    };
+    document.getElementById('addFitnessForm').onsubmit = function(e){
+      e.preventDefault(); var f = e.target; var imgFile = f.fImage.files && f.fImage.files[0];
+      var doAdd = function(img){ wrapPromise(addFitness(f.fDate.value, f.fType.value, parseInt(f.fMinutes.value || '0', 10), f.fNote.value.trim(), img)).then(function(){ f.reset(); fitImgPrev.style.display = 'none'; loadAll(); }); };
+      if (imgFile) { wrapPromise(uploadImageToRepo(imgFile)).then(function(p){ doAdd(p); }).catch(function(){ toast('图片上传失败'); }); } else doAdd('');
+    };
+
+    document.getElementById('addAnniversaryForm').onsubmit = function(e){
+      e.preventDefault(); var f = e.target;
+      wrapPromise(addAnniversary(f.aTitle.value.trim(), f.aDate.value, f.aType.value, f.aNote.value.trim())).then(function(){ f.reset(); document.querySelector('input[name="aDate"]').value = today; loadAll(); });
+    };
+
+    var noteImgPrev = document.getElementById('noteImgPrev');
+    document.querySelector('input[name="nImages"]').onchange = function(e){
+      var files = Array.from(e.target.files || []); noteImgPrev.innerHTML = '';
+      if (!files.length) { noteImgPrev.style.display = 'none'; return; }
+      files.forEach(function(f){ compressImage(f, 320, 0.8).then(function(d){ var im = document.createElement('img'); im.src = d; noteImgPrev.appendChild(im); }); });
+      noteImgPrev.style.display = 'flex';
+    };
+    document.getElementById('addNoteForm').onsubmit = function(e){
+      e.preventDefault(); var f = e.target; var files = Array.from(f.nImages.files || []);
+      var chain = Promise.resolve([]);
+      files.forEach(function(file){ chain = chain.then(function(arr){ return uploadImageToRepo(file).then(function(p){ arr.push(p); return arr; }); }); });
+      chain.then(function(imgs){ return wrapPromise(addNote(f.nTitle.value.trim(), f.nContent.value.trim(), f.nMood.value, imgs)); })
+        .then(function(){ f.reset(); noteImgPrev.innerHTML = ''; noteImgPrev.style.display = 'none'; loadAll(); })
+        .catch(function(){ toast('图片上传失败'); });
+    };
   }
 
   // 表单草稿不再做本地缓存（用户要求：任何数据都不写本地存储）。
@@ -970,7 +1501,7 @@
 
   function setupBackup() {
     document.getElementById('backupBtn').onclick = function(){
-      var data = { habits: state.habits, records: state.records, todos: state.todos, focus: state.focus, exportedAt: new Date().toISOString() };
+      var data = { habits: state.habits, records: state.records, todos: state.todos, focus: state.focus, reading: state.reading, fitness: state.fitness, anniversaries: state.anniversaries, notes: state.notes, exportedAt: new Date().toISOString() };
       var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '工作台备份_' + today + '.json'; a.click();
       toast('备份已下载');
@@ -984,9 +1515,14 @@
     habits:   { name:'打卡',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' },
     todos:    { name:'待办',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>' },
     focus:    { name:'番茄钟', icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' },
-    settings: { name:'设置',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' }
+    settings: { name:'设置',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
+    reading:       { name:'阅读',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
+    fitness:       { name:'健身',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>' },
+    anniversaries: { name:'纪念日', icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>' },
+    notes:         { name:'随笔',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' },
+    stats:         { name:'统计',   icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>' }
   };
-  var DEFAULT_ORDER = ['home','habits','todos','focus','settings'];
+  var DEFAULT_ORDER = ['home','habits','todos','focus','reading','fitness','anniversaries','notes','stats','settings'];
   var ORIGINAL_AVATAR = (document.querySelector('.brand-icon img') || {}).src || '';
   var FOCUS_PRESETS = [15,25,45,60];
 
@@ -1113,6 +1649,7 @@
     if (!confirm('再次确认：将删除所有打卡、待办、专注记录及习惯，无法撤销。')) return;
     showSpinner(true);
     state.habits = []; state.records = []; state.todos = []; state.focus = [];
+    state.reading = []; state.fitness = []; state.anniversaries = []; state.notes = [];
     saveToRepo()
       .then(function(){ toast('已清空全部数据'); loadAll(); })
       .catch(function(){ showSpinner(false); toast('清空失败，请重试'); });
