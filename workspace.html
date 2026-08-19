@@ -640,6 +640,7 @@
               <div class="rr-progress-fill" id="rsProgressFill"></div>
             </div>
             <div class="rr-progress-legend" id="rsProgressLegend"></div>
+            <div class="rr-progress-single" id="rsProgressSingle" style="display:none;"></div>
           </div>
 
           <div class="rr-ratio" id="rsRatio">
@@ -990,25 +991,27 @@
   .rr-title{ font-size: 20px; font-weight: 800; margin-top: 6px; color: var(--rr-text); }
   .rr-subtitle{ font-size: 12px; color: var(--rr-text-2); margin-top: 4px; }
   .rr-kpi-grid{
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;
   }
   @media (max-width:640px){ .rr-kpi-grid{ grid-template-columns: repeat(2, 1fr); } }
   .rr-kpi{
-    border: 1px solid var(--rr-border); border-radius: 18px; padding: 16px 10px; text-align: center;
+    border: 1px solid var(--rr-border); border-radius: 16px; padding: 16px 10px; text-align: center;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
   }
   .rr-kpi:nth-child(1){ background: linear-gradient(135deg, rgba(167,139,250,.22), rgba(139,92,246,.10)); }
   .rr-kpi:nth-child(2){ background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(59,130,246,.10)); }
   .rr-kpi:nth-child(3){ background: linear-gradient(135deg, rgba(244,114,182,.22), rgba(236,72,153,.10)); }
   .rr-kpi:nth-child(4){ background: linear-gradient(135deg, rgba(251,146,60,.22), rgba(249,115,22,.10)); }
   .rr-kpi-num{
-    font-size: 28px; font-weight: 900; color: #FFFFFF; line-height: 1.1;
+    font-size: 28px; font-weight: 900; color: var(--rr-text); line-height: 1.1;
   }
   .rr-kpi-label{ font-size: 12px; color: var(--rr-text-2); margin-top: 6px; }
   .rr-ratio{
-    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 16px; padding: 18px 16px; margin-bottom: 24px;
+    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 16px; padding: 18px 16px; margin-bottom: 20px;
   }
   .rr-ratio-bar{
-    height: 24px; border-radius: 12px; background: var(--rr-card); border: 1px solid var(--rr-border);
+    height: 22px; border-radius: 11px; background: var(--rr-card); border: 1px solid var(--rr-border);
     overflow: hidden; display: flex;
   }
   .rr-ratio-seg{ height: 100%; position: relative; transition: width .6s ease; }
@@ -1016,7 +1019,7 @@
   .rr-ratio-seg.read{ background: linear-gradient(90deg, #F472B6, #EC4899); }
   .rr-ratio-legend{ display: flex; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--rr-text-2); }
   .rr-progress{
-    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 16px; padding: 18px 16px; margin-bottom: 24px;
+    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 16px; padding: 18px 16px; margin-bottom: 20px;
   }
   .rr-progress-bar{
     height: 28px; border-radius: 14px; background: var(--rr-card); border: 1px solid var(--rr-border);
@@ -1025,16 +1028,21 @@
   .rr-progress-seg{
     height: 100%; position: relative; transition: width .6s ease;
   }
-  .rr-progress-seg.done{ background: #EC4899; }
-  .rr-progress-seg.reading{ background: #8B5CF6; }
-  .rr-progress-seg.want{ background: #3B82F6; }
-  .rr-progress-seg.start{ background: #10B981; }
-  .rr-progress-seg.half{ background: #F59E0B; }
-  .rr-progress-seg.near{ background: #F97316; }
+  .rr-progress-seg.done{ background: linear-gradient(90deg,#F472B6,#EC4899); }
+  .rr-progress-seg.reading{ background: linear-gradient(90deg,#8B5CF6,#6D28D9); }
+  .rr-progress-seg.want{ background: linear-gradient(90deg,#3B82F6,#2563EB); }
+  .rr-progress-seg.start{ background: linear-gradient(90deg,#10B981,#059669); }
+  .rr-progress-seg.half{ background: linear-gradient(90deg,#F59E0B,#D97706); }
+  .rr-progress-seg.near{ background: linear-gradient(90deg,#F97316,#EA580C); }
   .rr-progress-legend{
     display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; font-size: 12px; color: var(--rr-text-2);
   }
   .rr-legend-dot{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .rr-legend-item{ display: flex; align-items: center; }
+  .rr-progress-single{ display:flex; align-items:center; gap:10px; background:var(--rr-card); border:1px solid var(--rr-border); border-radius:12px; padding:12px 16px; }
+  .rr-single-dot{ width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+  .rr-single-text{ font-size:14px; font-weight:700; color:var(--rr-text); }
+  .rr-single-pct{ margin-left:auto; font-size:13px; font-weight:800; color:var(--rr-primary); }
   .rr-columns{
     display: grid; grid-template-columns: 1fr; gap: 22px; margin-bottom: 24px;
   }
@@ -1053,7 +1061,7 @@
   }
   .rr-rank-num{
     width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; color: var(--rr-primary); background: var(--rr-card-2); flex: 0 0 24px;
+    font-size: 12px; font-weight: 800; color: var(--rr-primary); background: rgba(167,139,250,.12); flex: 0 0 24px;
   }
   .rr-rank-num.top1{ background: linear-gradient(135deg, #FDE68A, #F59E0B); color: #4A3B00; }
   .rr-rank-num.top2{ background: linear-gradient(135deg, #E5E7EB, #9CA3AF); color: #374151; }
@@ -1073,7 +1081,7 @@
     display: grid; grid-template-columns: 1fr 60px; align-items: center; gap: 8px;
   }
   .rr-cat-row{ display: flex; align-items: center; gap: 8px; }
-  .rr-cat-name{ font-size: 13px; color: var(--rr-text); font-weight: 600; flex: 0 0 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rr-cat-name{ font-size: 13px; color: var(--rr-text); font-weight: 600; flex: 0 0 auto; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rr-cat-track{ flex: 1; height: 8px; border-radius: 4px; background: var(--rr-card); border: 1px solid var(--rr-border); overflow: hidden; }
   .rr-cat-fill{ height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--rr-primary), var(--rr-pink)); transition: width .5s ease; }
   .rr-cat-meta{ font-size: 11px; color: var(--rr-text-2); text-align: right; }
@@ -1086,24 +1094,26 @@
     position: relative; transition: height .4s ease;
   }
   .rr-trend-bar:hover{ opacity: 1; }
-  .rr-trend-val{ position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--rr-text); white-space: nowrap; }
+  .rr-trend-val{ position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--rr-primary); font-weight: 800; white-space: nowrap; }
   .rr-trend-label{ position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--rr-text-2); white-space: nowrap; }
   .rr-achievements{
-    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 18px; padding: 18px 16px; margin-bottom: 24px;
+    background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 18px; padding: 18px 16px; margin-bottom: 20px;
   }
-  .rr-ach-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .rr-ach-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
   .rr-ach{ text-align: center; }
-  .rr-ach-num{ font-size: 24px; font-weight: 900; color: #FFFFFF; line-height: 1; }
+  .rr-ach-num{ font-size: 24px; font-weight: 900; color: var(--rr-text); line-height: 1; }
   .rr-ach-label{ font-size: 12px; color: var(--rr-text-2); margin-top: 5px; }
-  .rr-publishers{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .rr-publishers{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
   .rr-publisher{ display: inline-flex; align-items: center; gap: 6px; background: rgba(167,139,250,.15); color: var(--rr-primary); border: 1px solid var(--rr-border); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .rr-portrait{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
   .rr-portrait-tag{ display: inline-flex; align-items: center; gap: 5px; background: rgba(167,139,250,.15); color: var(--rr-primary); border: 1px solid var(--rr-border); padding: 7px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
   .rr-authors{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .rr-author{
     display: flex; align-items: center; gap: 10px;
-    background: var(--rr-card); border: 1px solid var(--rr-border); border-radius: 12px; padding: 11px 12px;
+    background: var(--rr-card); border: 1px solid var(--rr-border); border-radius: 14px; padding: 11px 12px;
+    transition: .2s;
   }
+  .rr-author:hover{ background: var(--rr-card-hover); }
   .rr-author-avatar{
     width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--rr-primary), var(--rr-pink));
     display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex: 0 0 34px;
@@ -1112,10 +1122,10 @@
   .rr-author-name{ font-size: 13px; font-weight: 700; color: var(--rr-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rr-author-meta{ font-size: 11px; color: var(--rr-text-2); margin-top: 1px; }
   /* 最近笔记 */
-  .rr-notes{ display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .rr-notes{ display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
   .rr-note{
     position: relative; background: var(--rr-card); border: 1px solid var(--rr-border);
-    border-radius: 12px; padding: 12px 14px 12px 18px; overflow: hidden;
+    border-radius: 14px; padding: 12px 14px 12px 18px; overflow: hidden;
   }
   .rr-note::before{
     content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
@@ -1129,7 +1139,8 @@
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
   .rr-note-time{ font-size: 11px; color: var(--rr-text-3); margin-top: 6px; }
-  .rr-notes-empty{ font-size: 13px; color: var(--rr-text-2); padding: 4px 2px; }
+  .rr-notes-empty{ display:flex; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--rr-border-2); border-radius:12px; padding:22px 14px; color:var(--rr-text-2); font-size:13px; background:rgba(255,255,255,.02); }
+  .rr-notes-empty::before{ content:'📝'; font-size:16px; }
 
   /* 云端同步后端状态 */
   .token-status{font-weight:600;color:var(--red);}
@@ -1812,31 +1823,55 @@
       var total = state.books.length || 1;
       var bar = document.getElementById('rsProgressFill'); bar.innerHTML = '';
       var legend = document.getElementById('rsProgressLegend'); legend.innerHTML = '';
-      segOrder.forEach(function(k){
-        var v = dist[k] || 0; if (!v) return;
-        var pct = (v / total * 100).toFixed(1);
-        var seg = document.createElement('div'); seg.className = 'rr-progress-seg ' + segClass[k]; seg.style.width = pct + '%';
-        seg.title = k + ' ' + v + ' 本 (' + pct + '%)';
-        bar.appendChild(seg);
-        var leg = document.createElement('div'); leg.className = 'rr-legend-item';
-        leg.innerHTML = '<span class="rr-legend-dot" style="background:' + segColor[k] + '"></span>' + escapeHtml(k) + ' ' + v;
-        legend.appendChild(leg);
-      });
+      var progressBarEl = bar.parentElement;
+      var singleEl = document.getElementById('rsProgressSingle');
+      var activeSegs = segOrder.filter(function(k){ return (dist[k] || 0) > 0; });
+      if (activeSegs.length <= 1) {
+        // 单状态：隐藏分段条，展示紧凑单状态条
+        if (progressBarEl) progressBarEl.style.display = 'none';
+        if (singleEl) {
+          var sk = activeSegs[0] || segOrder[0];
+          var sv = dist[sk] || 0;
+          singleEl.style.display = 'flex';
+          singleEl.innerHTML = ''
+            + '<div class="rr-single-dot" style="background:' + segColor[sk] + '"></div>'
+            + '<div class="rr-single-text">' + escapeHtml(sk) + ' ' + sv + ' 本</div>'
+            + '<div class="rr-single-pct">100%</div>';
+        }
+      } else {
+        if (progressBarEl) progressBarEl.style.display = '';
+        if (singleEl) singleEl.style.display = 'none';
+        segOrder.forEach(function(k){
+          var v = dist[k] || 0; if (!v) return;
+          var pct = (v / total * 100).toFixed(1);
+          var seg = document.createElement('div'); seg.className = 'rr-progress-seg ' + segClass[k]; seg.style.width = pct + '%';
+          seg.title = k + ' ' + v + ' 本 (' + pct + '%)';
+          bar.appendChild(seg);
+          var leg = document.createElement('div'); leg.className = 'rr-legend-item';
+          leg.innerHTML = '<span class="rr-legend-dot" style="background:' + segColor[k] + '"></span>' + escapeHtml(k) + ' ' + v;
+          legend.appendChild(leg);
+        });
+      }
 
       // TOP10
       var readTimeOf = function(b){ return b.readTime || b.totalReadTime || b.readingTime || b.totalReadingTime || 0; };
+      var hasReadTimeField = function(b){
+        var src = b.raw || b;
+        return ('readTime' in src) || ('totalReadTime' in src) || ('readingTime' in src) || ('totalReadingTime' in src);
+      };
       var top10 = (s.topBooks || s.top10 || s.bookRankings || state.books.slice().sort(function(a,b){ return readTimeOf(b) - readTimeOf(a); })).slice(0, 10);
       var top10List = document.getElementById('rsTop10List');
       top10List.innerHTML = '';
       if (!top10.length) top10List.innerHTML = '<div class="empty-state">暂无排行数据</div>';
       top10.forEach(function(b, i){
         var title = b.title || b.bookName || '未命名'; var t = readTimeOf(b);
+        var timeStr = (t === 0 && !hasReadTimeField(b)) ? '—' : fmtReadTimeCompact(t);
         var el = document.createElement('div'); el.className = 'rr-rank';
         var rankCls = 'rr-rank-num ' + (i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '');
         el.innerHTML = '<div class="' + rankCls + '">' + (i + 1) + '</div>'
           + '<div class="rr-rank-info"><div class="rr-rank-title" title="' + escapeHtml(title) + '">' + escapeHtml(title) + '</div>'
           + '<div class="rr-rank-meta">' + escapeHtml(b.author || '') + '</div></div>'
-          + '<div class="rr-rank-time">' + fmtReadTimeCompact(t) + '</div>';
+          + '<div class="rr-rank-time">' + timeStr + '</div>';
         top10List.appendChild(el);
       });
 
