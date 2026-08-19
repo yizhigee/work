@@ -7,7 +7,6 @@
 //   PUT    /api/image    上传图片（body {path,content(base64)}）
 //   DELETE /api/image    删除图片（body {path}，Worker 内部取 sha 后删）
 //   GET    /            健康检查（返回 github / weread 配置就绪状态）
-//   GET    /debug       临时诊断端点（暴露 env 就绪状态与真实 GitHub 调用结果，不泄露 PAT 明文）
 //
 // 安全：GitHub PAT、微信读书 Key、APP_KEY 全部来自 Cloudflare 环境变量（后台设置），
 //   不进仓库、不下发前端、不写源码。APP_KEY 为轻量闸门，仅挡随机滥用（非有权限凭证）。
@@ -73,45 +72,6 @@ async function checkGithub(env) {
   } catch (e) {
     return false;
   }
-}
-
-// 临时诊断端点：不泄露 PAT 明文，只暴露长度、GitHub 真实响应状态等。
-async function handleDebug(request, env) {
-  const checkUrl = ghContentsUrl(env, env.GITHUB_DATA_FILE || 'data.json') + '?ref=' + (env.GITHUB_BRANCH || 'main');
-  let ghStatus = null;
-  let ghErr = null;
-  let ghRespText = '';
-  try {
-    const r = await fetch(checkUrl, { headers: ghHeaders(env) });
-    ghStatus = r.status;
-    ghRespText = await r.text().catch(function () { return ''; });
-  } catch (e) {
-    ghErr = e.message;
-  }
-  const pat = env.GITHUB_PAT || '';
-  const key = env.WEREAD_KEY || '';
-  return json({
-    ok: true,
-    note: 'diagnostic endpoint: lengths and github status only, no secrets exposed',
-    env: {
-      github_owner: env.GITHUB_OWNER || '',
-      github_repo: env.GITHUB_REPO || '',
-      github_branch: env.GITHUB_BRANCH || '',
-      github_data_file: env.GITHUB_DATA_FILE || '',
-      app_key_set: !!env.APP_KEY,
-      github_pat_length: pat.length,
-      github_pat_prefix: pat.length > 11 ? pat.slice(0, 11) : '',
-      github_pat_suffix: pat.length > 6 ? pat.slice(-6) : '',
-      weread_key_length: key.length,
-      weread_key_prefix: key.length > 4 ? key.slice(0, 4) : '',
-    },
-    github_check: {
-      url: checkUrl,
-      status: ghStatus,
-      error: ghErr,
-      response_preview: ghRespText.slice(0, 200),
-    },
-  });
 }
 
 async function handleData(request, env) {
@@ -212,7 +172,6 @@ export default {
       if (p === '/api/data') return withCors(await handleData(request, env), cors);
       if (p === '/api/image') return withCors(await handleImage(request, env), cors);
       if (p === '/api/weread') return withCors(await handleWeread(request, env), cors);
-      if (p === '/debug') return withCors(await handleDebug(request, env), cors);
       if (p === '/' || p === '/health') {
         const ghOk = await checkGithub(env);
         return withCors(json({ ok: true, github: ghOk, weread: !!env.WEREAD_KEY }), cors);
