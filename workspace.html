@@ -975,10 +975,10 @@
   /* ===== 微信读书年度阅读报告 ===== */
   .read-report-card{
     /* 深色主题变量：作用域限定在本卡片，不污染全局浅色主题 */
-    --rr-bg:#0E0D16; --rr-card:#1A1830; --rr-card-2:#221F3D; --rr-card-hover:#2A2748;
-    --rr-primary:#A78BFA; --rr-blue:#60A5FA; --rr-orange:#FB923C; --rr-pink:#F472B6;
-    --rr-text:#F3F1FA; --rr-text-2:#A7A2BC; --rr-text-3:#6E6A85;
-    --rr-border:rgba(255,255,255,0.08); --rr-border-2:#322F4D; --rr-shadow:0 6px 24px rgba(0,0,0,0.40);
+    --rr-bg:#F8F6FC; --rr-card:#FFFFFF; --rr-card-2:#F4F1FA; --rr-card-hover:#EDE9F8;
+    --rr-primary:#8B7DC0; --rr-blue:#6FA8E0; --rr-orange:#E0A05A; --rr-pink:#E08FB0;
+    --rr-text:#3D3A45; --rr-text-2:#7C7787; --rr-text-3:#9A95A8;
+    --rr-border:#E8E4F0; --rr-border-2:#D8D2E8; --rr-shadow:0 2px 10px rgba(75,60,115,0.06);
     background: var(--rr-bg); border: 1px solid var(--rr-border);
     border-radius: 22px; padding: 26px 22px 30px; margin-bottom: 16px;
     color: var(--rr-text); box-shadow: var(--rr-shadow);
@@ -996,13 +996,12 @@
   @media (max-width:640px){ .rr-kpi-grid{ grid-template-columns: repeat(2, 1fr); } }
   .rr-kpi{
     border: 1px solid var(--rr-border); border-radius: 16px; padding: 16px 10px; text-align: center;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    box-shadow: 0 1px 4px rgba(75,60,115,.06);
   }
-  .rr-kpi:nth-child(1){ background: linear-gradient(135deg, rgba(167,139,250,.22), rgba(139,92,246,.10)); }
-  .rr-kpi:nth-child(2){ background: linear-gradient(135deg, rgba(96,165,250,.22), rgba(59,130,246,.10)); }
-  .rr-kpi:nth-child(3){ background: linear-gradient(135deg, rgba(244,114,182,.22), rgba(236,72,153,.10)); }
-  .rr-kpi:nth-child(4){ background: linear-gradient(135deg, rgba(251,146,60,.22), rgba(249,115,22,.10)); }
+  .rr-kpi:nth-child(1){ background: linear-gradient(135deg, rgba(139,125,192,.16), rgba(139,125,192,.05)); }
+  .rr-kpi:nth-child(2){ background: linear-gradient(135deg, rgba(111,168,224,.16), rgba(111,168,224,.05)); }
+  .rr-kpi:nth-child(3){ background: linear-gradient(135deg, rgba(224,143,176,.16), rgba(224,143,176,.05)); }
+  .rr-kpi:nth-child(4){ background: linear-gradient(135deg, rgba(224,160,90,.16), rgba(224,160,90,.05)); }
   .rr-kpi-num{
     font-size: 28px; font-weight: 900; color: var(--rr-text); line-height: 1.1;
   }
@@ -1015,8 +1014,8 @@
     overflow: hidden; display: flex;
   }
   .rr-ratio-seg{ height: 100%; position: relative; transition: width .6s ease; }
-  .rr-ratio-seg.listen{ background: linear-gradient(90deg, #A78BFA, #8B5CF6); }
-  .rr-ratio-seg.read{ background: linear-gradient(90deg, #F472B6, #EC4899); }
+  .rr-ratio-seg.listen{ background: linear-gradient(90deg, #B49DE8, #8B7DC0); }
+  .rr-ratio-seg.read{ background: linear-gradient(90deg, #F2A8C8, #E080A8); }
   .rr-ratio-legend{ display: flex; gap: 14px; margin-top: 12px; font-size: 12px; color: var(--rr-text-2); }
   .rr-progress{
     background: var(--rr-card-2); border: 1px solid var(--rr-border); border-radius: 16px; padding: 18px 16px; margin-bottom: 20px;
@@ -1028,12 +1027,12 @@
   .rr-progress-seg{
     height: 100%; position: relative; transition: width .6s ease;
   }
-  .rr-progress-seg.done{ background: linear-gradient(90deg,#F472B6,#EC4899); }
-  .rr-progress-seg.reading{ background: linear-gradient(90deg,#8B5CF6,#6D28D9); }
-  .rr-progress-seg.want{ background: linear-gradient(90deg,#3B82F6,#2563EB); }
-  .rr-progress-seg.start{ background: linear-gradient(90deg,#10B981,#059669); }
-  .rr-progress-seg.half{ background: linear-gradient(90deg,#F59E0B,#D97706); }
-  .rr-progress-seg.near{ background: linear-gradient(90deg,#F97316,#EA580C); }
+  .rr-progress-seg.done{ background: linear-gradient(90deg,#F2A8C8,#E080A8); }
+  .rr-progress-seg.reading{ background: linear-gradient(90deg,#B49DE8,#8B7DC0); }
+  .rr-progress-seg.want{ background: linear-gradient(90deg,#8FBDE8,#6FA8E0); }
+  .rr-progress-seg.start{ background: linear-gradient(90deg,#8FD9B4,#6FC499); }
+  .rr-progress-seg.half{ background: linear-gradient(90deg,#F0D488,#E6C068); }
+  .rr-progress-seg.near{ background: linear-gradient(90deg,#F0B488,#E0A05A); }
   .rr-progress-legend{
     display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 14px; font-size: 12px; color: var(--rr-text-2);
   }
@@ -1139,7 +1138,7 @@
     display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   }
   .rr-note-time{ font-size: 11px; color: var(--rr-text-3); margin-top: 6px; }
-  .rr-notes-empty{ display:flex; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--rr-border-2); border-radius:12px; padding:22px 14px; color:var(--rr-text-2); font-size:13px; background:rgba(255,255,255,.02); }
+  .rr-notes-empty{ display:flex; align-items:center; justify-content:center; gap:8px; border:1px dashed var(--rr-border-2); border-radius:12px; padding:22px 14px; color:var(--rr-text-2); font-size:13px; background:rgba(139,125,192,.04); }
   .rr-notes-empty::before{ content:'📝'; font-size:16px; }
 
   /* 云端同步后端状态 */
@@ -1819,7 +1818,7 @@
       }
       var segOrder = ['已读完','接近读完','过半','阅读中','刚开始','未开始'];
       var segClass = { '已读完':'done','接近读完':'near','过半':'half','阅读中':'reading','刚开始':'start','未开始':'want' };
-      var segColor = { '已读完':'#F472B6','接近读完':'#F97316','过半':'#F59E0B','阅读中':'#8B5CF6','刚开始':'#10B981','未开始':'#3B82F6' };
+      var segColor = { '已读完':'#E080A8','接近读完':'#E0A05A','过半':'#E6C068','阅读中':'#8B7DC0','刚开始':'#6FC499','未开始':'#6FA8E0' };
       var total = state.books.length || 1;
       var bar = document.getElementById('rsProgressFill'); bar.innerHTML = '';
       var legend = document.getElementById('rsProgressLegend'); legend.innerHTML = '';
