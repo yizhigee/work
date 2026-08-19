@@ -973,8 +973,11 @@
   .book-card.weread{display:flex;gap:12px;align-items:flex-start;}
 
   /* ===== 微信读书年度阅读报告 ===== */
+  /* 阅读页不需要再显示顶部大标题（Tab 已有导航） */
+  #reading .section-header { display: none; }
+
   .read-report-card{
-    /* 深色主题变量：作用域限定在本卡片，不污染全局浅色主题 */
+    /* 浅色主题变量：作用域限定在本卡片，不污染全局浅色主题 */
     --rr-bg:#F8F6FC; --rr-card:#FFFFFF; --rr-card-2:#F4F1FA; --rr-card-hover:#EDE9F8;
     --rr-primary:#8B7DC0; --rr-blue:#6FA8E0; --rr-orange:#E0A05A; --rr-pink:#E08FB0;
     --rr-text:#3D3A45; --rr-text-2:#7C7787; --rr-text-3:#9A95A8;
@@ -982,6 +985,7 @@
     background: var(--rr-bg); border: 1px solid var(--rr-border);
     border-radius: 22px; padding: 26px 22px 30px; margin-bottom: 16px;
     color: var(--rr-text); box-shadow: var(--rr-shadow);
+    overflow: hidden;
   }
   .rr-header{ margin-bottom: 24px; }
   .rr-year{
@@ -1046,6 +1050,7 @@
     display: grid; grid-template-columns: 1fr; gap: 22px; margin-bottom: 24px;
   }
   @media (min-width:900px){ .rr-columns{ grid-template-columns: 1.1fr 0.9fr; } }
+  .rr-col { min-width: 0; overflow: hidden; }
   .rr-section-title{
     font-size: 15px; font-weight: 800; color: var(--rr-text); margin: 0 0 14px;
     display: flex; align-items: center; gap: 6px;
@@ -1056,7 +1061,7 @@
   .rr-rank{
     display: flex; align-items: center; gap: 12px;
     background: var(--rr-card); border: 1px solid var(--rr-border); border-radius: 14px; padding: 12px 13px;
-    overflow: hidden;
+    overflow: hidden; max-width: 100%;
   }
   .rr-rank-num{
     width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -1073,7 +1078,7 @@
   .rr-rank-meta{ font-size: 11px; color: var(--rr-text-2); margin-top: 2px; }
   .rr-rank-time{
     font-size: 12px; font-weight: 800; color: var(--rr-primary); flex: 0 0 auto; text-align: right;
-    white-space: nowrap; min-width: 0;
+    white-space: nowrap; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
   }
   .rr-categories{ display: flex; flex-direction: column; gap: 10px; }
   .rr-cat{
