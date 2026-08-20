@@ -1,10 +1,11 @@
 <!--
-  ⚠️ 安全模型（GitHub 仓库 + GitHub Pages + Cloudflare Worker 网关）
-  · 本页面【不包含】任何 GitHub PAT 或微信读书 Key——全部凭证仅存于 Cloudflare Worker（weread-proxy）的环境变量中。
-  · 前端只持有公开的 Worker 地址与一个轻量 APP_KEY 闸门（非有权限凭证，仅挡随机滥用）。
-  · 数据存仓库内 data.json，图片存 images/，博客存 posts/，页面经 GitHub Pages 托管。
-  · 即便页面链接 / 源码外传，他人也拿不到任何可写凭证，无法篡改你的数据；换设备 / 换浏览器无需重配。
-  · 凭证轮换只需在 Cloudflare 后台改环境变量并 Deploy，无需改动本页面。
+  ⚠️ 本地存储模式（单文件 HTML + File System Access API）
+  · 所有数据（打卡 / 待办 / 健身 / 日记 / 微信读书报告等）均保存在你电脑本地选择的文件夹中（data.json）。
+  · 无任何后端、无云同步、无网络请求：数据不经过任何服务器，也不存在跨域问题。
+  · 首次使用请点击「选择数据文件夹」授权一个目录；之后自动读写该目录下的 data.json。
+  · 换电脑 / 浏览器：重新选择文件夹并复制该 data.json 即可迁移，数据完全由你掌控。
+  · 微信读书数据改为手动「导入本地 JSON」（原自动同步需服务端代理，本地模式不可用）。
+  · 注意：File System Access API 仅 Chrome / Edge 等 Chromium 内核浏览器完整支持。
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -65,13 +66,12 @@
   .brand #brandText { display: none; }
   body[data-section="home"] .brand #brandText { display: block; }
   .top-actions { display: flex; align-items: center; gap: 10px; }
-  .sync-status {
-    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);
-    background: var(--card); padding: 6px 10px; border-radius: 20px; box-shadow: var(--shadow);
+  .data-folder-btn {
+    font-size: 12px; color: var(--primary); cursor: pointer;
+    background: var(--card); padding: 6px 12px; border-radius: 20px; box-shadow: var(--shadow);
+    border: 1px solid var(--border); transition: background .15s;
   }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-  .sync-dot.offline { background: var(--red); }
-  .sync-dot.syncing { background: var(--yellow); }
+  .data-folder-btn:hover { background: var(--primary-light); }
   .card {
     background: var(--card); border-radius: 18px; padding: 18px;
     box-shadow: var(--shadow); margin-bottom: 14px;
@@ -296,8 +296,8 @@
         <div class="brand-meta">专注当下，慢慢变好</div>
       </div>
     </div>
-    <div class="top-actions">
-      <div class="sync-status" id="syncStatus"><span class="sync-dot" id="syncDot"></span><span id="syncText">已同步</span></div>
+      <div class="top-actions">
+      <button class="data-folder-btn" id="topDataFolderBtn" title="选择 / 切换数据文件夹">📁 数据文件夹</button>
     </div>
   </header>
 
@@ -565,23 +565,25 @@
         </div>
 
         <div class="card">
-          <div class="card-title">云端同步</div>
-          <p class="card-hint">数据读写与微信读书鉴权全部经 Cloudflare Worker 网关完成。GitHub PAT 与微信读书 Key 仅存于 Worker 环境变量，不下发浏览器、不进源码、不存 localStorage，换设备 / 换浏览器无需重新配置。</p>
+          <div class="card-title">本地存储</div>
+          <p class="card-hint">所有数据保存在你电脑本地选择的文件夹（data.json），不经过任何服务器、无云同步、无跨域。首次请点击下方按钮选择文件夹。</p>
           <div class="form-row">
-            <label>后端状态</label>
-            <span id="backendStatus" class="token-status">未连接</span>
+            <label>数据文件夹</label>
+            <button class="btn btn-primary btn-small" id="dataFolderBtn">选择数据文件夹</button>
+            <span id="backendStatus" class="token-status">未选择</span>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">微信读书同步</div>
-          <p class="card-hint">书架、阅读统计、笔记全部来自微信读书，已通过后端网关自动鉴权，无需手动填写 Key。</p>
+          <div class="card-title">微信读书数据</div>
+          <p class="card-hint">本地模式不支持自动同步（需服务端代理）。请先从微信读书导出数据，再点击下方按钮导入本地 JSON。</p>
           <div class="weread-sync-inline">
             <div>
-              <div class="weread-sync-status" id="wereadSyncStatus">未同步</div>
-              <div class="weread-sync-meta" id="wereadSyncMeta">点击「立即同步」拉取微信读书数据</div>
+              <div class="weread-sync-status" id="wereadSyncStatus">未导入</div>
+              <div class="weread-sync-meta" id="wereadSyncMeta">点击「导入 JSON」加载微信读书数据</div>
             </div>
-            <button class="btn btn-primary btn-small" id="wereadSyncBtn">立即同步</button>
+            <button class="btn btn-primary btn-small" id="wereadImportBtn">导入 JSON</button>
+            <input type="file" id="wereadImportFile" accept="application/json,.json" style="display:none">
           </div>
         </div>
 
@@ -605,7 +607,6 @@
             <button class="reading-tab" data-tab="bookshelf" role="tab" aria-selected="false">书架</button>
             <button class="reading-tab" data-tab="plan" role="tab" aria-selected="false">计划</button>
           </div>
-          <div class="reading-sync-status" id="readingSyncStatus"><span class="reading-sync-dot" id="readingSyncDot"></span><span id="readingSyncText">已同步</span></div>
         </div>
 
         <!-- 报告面板 -->
@@ -1181,15 +1182,7 @@
     color: #fff;
     box-shadow: 0 2px 8px rgba(139,125,192,.25);
   }
-  .reading-sync-status {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--text-secondary);
-    background: var(--card); padding: 6px 10px; border-radius: 20px;
-    box-shadow: var(--shadow); flex: 0 0 auto; white-space: nowrap;
-  }
-  .reading-sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-  .reading-sync-dot.offline { background: var(--red); }
-  .reading-sync-dot.syncing { background: var(--yellow); }
+  /* 阅读页云同步状态已移除（本地模式无云同步） */
   .reading-panel { display: none; }
   .reading-panel.active { display: block; animation: readingFadeIn .25s ease; }
   @keyframes readingFadeIn {
@@ -1312,39 +1305,99 @@
 (function() {
   'use strict';
 
-  // ===== 后端配置（凭证统一托管在 Cloudflare Worker，前端零 token）=====
-  // 安全模型：GitHub PAT 与微信读书 Key 仅存于 Worker 环境变量（Cloudflare 后台），
-  //   不下发浏览器、不进公开仓库源码、也不存 localStorage。前端只持有 Worker 地址与一个
-  //   轻量 APP_KEY 闸门（非有权限凭证，仅挡随机滥用）。换设备/换浏览器无需重新配置。
-  var CONFIG = { OWNER: 'yizhigee', REPO: 'work', BRANCH: 'main', DATA_FILE: 'data.json' };
-  // Worker 网关地址（公开，但仅作中转，不含任何密钥）
-  var WORKER_URL = 'https://weread-proxy.lucky888312.workers.dev';
-  // 轻量闸门密钥：与 Worker 环境变量 APP_KEY 保持一致即可；非敏感，仅防随机调用。
-  var APP_KEY = 'workbench-gate-2026';
+  // ===== 本地文件数据层（File System Access API，纯前端、无后端、无云同步）=====
+  // 数据统一存于用户授权目录下的 data.json（图片以 base64 内联，避免独立文件与跨域）。
+  var FS_FILE = 'data.json';
+  var fsDirHandle = null;
 
-  function isBackendConfigured() { return !!WORKER_URL; }
-  function isTokenSet() { return true; }        // 凭证在 Worker，前端无需配置
-  function isWereadKeySet() { return true; }     // 同上
+  function fsSupported() { return (typeof window !== 'undefined') && ('showDirectoryPicker' in window); }
 
-  // 统一访问 Worker 网关（自动带 APP_KEY 闸门头，15 秒超时避免永久“同步中”）
-  function workerApi(path, opts) {
-    opts = opts || {};
-    var headers = { 'Content-Type': 'application/json', 'x-app-key': APP_KEY };
-    var controller = new AbortController();
-    var timer = setTimeout(function(){ controller.abort(); }, 15000);
-    return fetch(WORKER_URL + path, {
-      method: opts.method || 'GET',
-      headers: headers,
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      signal: controller.signal
-    }).then(function(res){
-      clearTimeout(timer);
-      return res.json().catch(function(){ return { ok:false, errmsg:'bad response (http '+res.status+')' }; });
-    }).catch(function(err){
-      clearTimeout(timer);
-      if (err.name === 'AbortError') return { ok:false, errmsg:'请求超时（15 秒），请检查网络或 Worker 状态' };
-      return { ok:false, errmsg:err.message || '网络错误' };
+  // 句柄持久化到 IndexedDB，减少重复授权弹窗
+  function idbReady() {
+    return new Promise(function(res, rej){
+      var r = indexedDB.open('workbench-fs', 1);
+      r.onupgradeneeded = function(){ try { r.result.createObjectStore('handles'); } catch(e){} };
+      r.onsuccess = function(){ res(r.result); };
+      r.onerror = function(){ rej(r.error); };
     });
+  }
+  function saveHandle(h) {
+    return idbReady().then(function(db){
+      return new Promise(function(res, rej){
+        var tx = db.transaction('handles', 'readwrite');
+        tx.objectStore('handles').put(h, 'dir');
+        tx.oncomplete = function(){ res(); };
+        tx.onerror = function(){ rej(tx.error); };
+      });
+    });
+  }
+  function loadHandle() {
+    return idbReady().then(function(db){
+      return new Promise(function(res, rej){
+        var tx = db.transaction('handles', 'readonly');
+        var rq = tx.objectStore('handles').get('dir');
+        rq.onsuccess = function(){ res(rq.result || null); };
+        rq.onerror = function(){ rej(rq.error); };
+      });
+    }).catch(function(){ return null; });
+  }
+
+  // 必须在用户手势内调用（浏览器安全限制）
+  async function ensureDir() {
+    if (fsDirHandle) {
+      try {
+        if ((await fsDirHandle.queryPermission({ mode: 'readwrite' })) !== 'granted'
+            && (await fsDirHandle.requestPermission({ mode: 'readwrite' })) !== 'granted') {
+          throw new Error('permission denied');
+        }
+        return fsDirHandle;
+      } catch (e) { fsDirHandle = null; }
+    }
+    fsDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await saveHandle(fsDirHandle);
+    return fsDirHandle;
+  }
+
+  function serializeState() {
+    return {
+      habits: state.habits,
+      records: state.records,
+      todos: state.todos,
+      focus: state.focus,
+      reading: state.reading,
+      fitness: state.fitness,
+      anniversaries: state.anniversaries,
+      notes: state.notes,
+      books: state.books,
+      readStats: state.readStats,
+      notebooks: state.notebooks,
+      readingPlans: state.readingPlans,
+      settings: state.settings
+    };
+  }
+
+  async function loadLocal() {
+    var dir = await ensureDir();
+    try {
+      var fh = await dir.getFileHandle(FS_FILE);
+      var file = await fh.getFile();
+      var text = await file.text();
+      var data = text ? JSON.parse(text) : {};
+      if (!data || typeof data !== 'object') data = {};
+      applyState(data);
+    } catch (e) {
+      if (e && e.name === 'NotFoundError') { applyState({}); }
+      else { throw e; }
+    }
+  }
+
+  async function saveLocal() {
+    var dir = await ensureDir();
+    var data = serializeState();
+    var fh = await dir.getFileHandle(FS_FILE, { create: true });
+    var w = await fh.createWritable();
+    await w.write(JSON.stringify(data, null, 2));
+    await w.close();
   }
   function fmtReadTime(seconds) {
     if (!seconds) return '0 小时';
@@ -1369,7 +1422,6 @@
   // base64 UTF-8 安全编解码（数据含中文）
   function b64encodeUtf8(str) { return btoa(unescape(encodeURIComponent(str))); }
   function b64decodeUtf8(b64) { return decodeURIComponent(escape(atob(String(b64).replace(/\s/g, '')))); }
-  var dataSha = null; // 当前 data.json 的 blob sha，写回时用于乐观并发
 
   // 生成稳定唯一 id（用于记录级更新 / 删除定位）
   function genId() { return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9); }
@@ -1405,23 +1457,14 @@
   function fmtDate(iso) { if (!iso) return ''; var d = new Date(iso); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function isOverdue(due) { return due && due < today; }
 
-  function setSync(s) {
-    var dot = document.getElementById('syncDot'); var text = document.getElementById('syncText');
-    var rdot = document.getElementById('readingSyncDot'); var rtext = document.getElementById('readingSyncText');
-    var label = s === 'syncing' ? '同步中' : s === 'offline' ? '同步失败' : '已同步';
-    var cls = 'sync-dot' + (s === 'offline' ? ' offline' : s === 'syncing' ? ' syncing' : '');
-    var rcls = 'reading-sync-dot' + (s === 'offline' ? ' offline' : s === 'syncing' ? ' syncing' : '');
-    if (text) text.textContent = label;
-    if (dot) dot.className = cls;
-    if (rtext) rtext.textContent = label;
-    if (rdot) rdot.className = rcls;
+  function showFolderPrompt() {
+    toast('请点击右上角「📁 数据文件夹」选择目录以加载 / 保存数据');
   }
   function showSpinner(v) { document.getElementById('spinner').classList.toggle('active', v); }
   function toast(msg) { var el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 2000); }
 
-  // ===== 基于 GitHub 仓库 Contents API 的内存数据层 =====
-  // 单 JSON 文件 data.json 存储：{ habits:[], records:[], todos:[], focus:[], settings:{} }
-  // 读取走 Contents API（带 token，避免匿名限流）；写入走 PUT（需 dataSha 乐观并发）。
+  // ===== 本地文件内存数据层（File System Access API）=====
+  // 单 JSON 文件 data.json 存储全部状态；读取 / 写入统一经上方 loadLocal / saveLocal。
   function applyState(data) {
     state.habits = ensureArray(data.habits).map(withId);
     state.records = ensureArray(data.records).map(withId);
@@ -1446,100 +1489,63 @@
     state.settingsId = 'settings';
   }
 
-  function loadFromRepo() {
-    setSync('syncing');
-    return workerApi('/api/data')
-      .then(function(j){
-        if (!j.ok) throw new Error(j.errmsg || ('HTTP ' + (j.status || '?')));
-        if (j.empty || !j.data) { dataSha = null; applyState({}); setSync('synced'); return; }
-        dataSha = j.sha || null;
-        var data;
-        try { data = JSON.parse(j.data); } catch(e) { data = {}; }
-        if (!data || typeof data !== 'object') data = {};
-        applyState(data);
-        setSync('synced');
-      })
-      .catch(function(err){
-        console.error('loadFromRepo failed:', err);
-        setSync('offline');
-        toast('同步失败：请检查 Worker 网关或网络');
-        throw err;
-      });
-  }
-
-  function saveToRepo() {
-    setSync('syncing');
-    var data = {
-      habits: state.habits,
-      records: state.records,
-      todos: state.todos,
-      focus: state.focus,
-      reading: state.reading,
-      fitness: state.fitness,
-      anniversaries: state.anniversaries,
-      notes: state.notes,
-      books: state.books,
-      readStats: state.readStats,
-      notebooks: state.notebooks,
-      readingPlans: state.readingPlans,
-      settings: state.settings
-    };
-    return workerApi('/api/data', { method:'PUT', body: { data: JSON.stringify(data), sha: (typeof dataSha === 'string' && dataSha) ? dataSha : undefined } })
-      .then(function(j){
-        if (!j.ok) throw new Error(j.errmsg || ('HTTP ' + (j.status || '?')));
-        if (j.sha) dataSha = j.sha;
-        setSync('synced');
-      })
-      .catch(function(err){
-        console.error('saveToRepo failed:', err);
-        setSync('offline');
-        toast('同步失败：请检查 Worker 网关或网络');
-        throw err;
-      });
-  }
+  // loadLocal / saveLocal 已在本文件上方「本地文件数据层」区块定义，此处不再保留旧版。
 
   function addHabitRecord(name, category, freq) {
     var p = {}; p[HF.name] = name; p[HF.category] = category; p[HF.freq] = freq; p[HF.created] = today + 'T00:00:00Z'; p[HF.enabled] = true; p._id = genId();
     state.habits.push(p);
-    return saveToRepo();
+    return saveLocal();
   }
   function addCheckRecord(name, dateStr, done) {
     var p = {}; p[HR.name] = name; p[HR.date] = dateStr; p[HR.done] = done; p[HR.note] = ''; p._id = genId();
     state.records.push(p);
-    return saveToRepo();
+    return saveLocal();
   }
   function updateCheckRecord(id, done) {
     var rec = state.records.find(function(r){ return r._id === id; });
     if (rec) rec[HR.done] = done;
-    return saveToRepo();
+    return saveLocal();
   }
   function addTodoRecord(title, priority, due, tags) {
     var p = {}; p[TF.title] = title; p[TF.priority] = priority; p[TF.status] = '待办'; p[TF.due] = due; p[TF.tags] = tags; p[TF.note] = ''; p._id = genId();
     state.todos.push(p);
-    return saveToRepo();
+    return saveLocal();
   }
   function updateTodoStatus(id, status) {
     var rec = state.todos.find(function(r){ return r._id === id; });
     if (rec) rec[TF.status] = status;
-    return saveToRepo();
+    return saveLocal();
   }
   function deleteTodoRecord(id) {
     state.todos = state.todos.filter(function(r){ return r._id !== id; });
-    return saveToRepo();
+    return saveLocal();
   }
   function addFocusRecord(task, type, minutes) {
     var p = {}; p[FF.task] = task; p[FF.date] = today; p[FF.minutes] = minutes; p[FF.type] = type; p[FF.done] = true; p._id = genId();
     state.focus.push(p);
-    return saveToRepo();
+    return saveLocal();
   }
 
   function wrapPromise(p) { return Promise.resolve(p); }
 
-  function loadAll() {
+  async function loadAll() {
     showSpinner(true);
-    return loadFromRepo()
-      .then(function(){ showSpinner(false); renderAll(); })
-      .catch(function(){ showSpinner(false); renderAll(); });
+    try {
+      var h = await loadHandle();
+      if (h) {
+        try {
+          if ((await h.queryPermission({ mode: 'readwrite' })) === 'granted') {
+            fsDirHandle = h;
+            await loadLocal();
+          } else { showFolderPrompt(); }
+        } catch (e) { showFolderPrompt(); }
+      } else { showFolderPrompt(); }
+    } catch (e) {
+      console.error('loadAll failed:', e);
+      showFolderPrompt();
+    }
+    showSpinner(false);
+    renderAll();
   }
 
   function renderAll() { renderGreeting(); renderHome(); renderHabits(); renderTodos(); renderFocus(); renderReading(); renderFitness(); renderAnniversaries(); renderNotes(); renderStats(); }
@@ -1721,97 +1727,81 @@
       reader.readAsDataURL(file);
     });
   }
+  // 本地模式：图片直接压缩为 data URL 内联进 data.json（无独立文件、无跨域）
   function uploadImageToRepo(file) {
-    return compressImage(file, 1280, 0.8).then(function(dataUrl){
-      var b64 = dataUrl.split(',')[1];
-      var ts = new Date();
-      var name = 'images/' + ts.getFullYear() + pad(ts.getMonth()+1) + pad(ts.getDate()) + '-' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds()) + '-' + Math.random().toString(36).slice(2,6) + '.jpg';
-      return workerApi('/api/image', { method:'PUT', body: { path: name, content: b64 } })
-        .then(function(j){ if (!j.ok) throw new Error(j.errmsg || 'upload failed'); return name; });
-    });
+    return compressImage(file, 1280, 0.8);
   }
   function deleteImageFromRepo(path) {
-    if (!path) return Promise.resolve();
-    return workerApi('/api/image', { method:'DELETE', body: { path: path } })
-      .then(function(j){ if (!j.ok) throw new Error(j.errmsg || 'delete failed'); return j; });
+    return Promise.resolve();
   }
 
   function setText(id, v){ var el = document.getElementById(id); if (el) el.textContent = v; }
   function weekStart(){ var d = new Date(); var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
   function monthStart(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-01'; }
 
-  // ===== 微信读书同步（经 Worker 网关，前端零 Key）=====
-  function wereadFetch(apiName, params) {
-    var body = Object.assign({ api_name: apiName, skill_version: '1.0.4' }, params || {});
-    return workerApi('/api/weread', { method:'POST', body: body })
-      .then(function(j){
-        if (!j) throw new Error('empty response');
-        return j; // Worker 透传微信读书原始 JSON（已注入 Key）
+  // ===== 微信读书：手动导入本地 JSON（本地模式无服务端代理，无法自动同步）=====
+  function importWeread(file) {
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onload = function(){
+        try { resolve(JSON.parse(reader.result)); }
+        catch (e) { reject(new Error('JSON 解析失败：' + e.message)); }
+      };
+      reader.onerror = function(){ reject(new Error('文件读取失败')); };
+      reader.readAsText(file);
+    }).then(function(data){
+      var books = (data && data.books) || (data && data.data && data.data.books) || [];
+      var stats = data && data.readStats ? data.readStats : (data && data.data ? data.data : data);
+      var notebooks = (data && data.notebooks) || (data && data.data && data.data.notebooks) || [];
+      state.books = books.map(function(b){
+        var title = b.title || (b.bookInfo && b.bookInfo.title) || '未命名';
+        var author = b.author || (b.bookInfo && b.bookInfo.author) || '佚名';
+        var cover = b.cover || (b.bookInfo && b.bookInfo.cover) || '';
+        var category = b.category || (b.bookInfo && b.bookInfo.category) || '';
+        var publisher = b.publisher || (b.bookInfo && b.bookInfo.publisher) || '';
+        var progress = typeof b.readProgress === 'number' ? b.readProgress : (typeof b.progress === 'number' ? b.progress : 0);
+        var readTime = b.readTime || b.totalReadTime || 0;
+        var noteCount = typeof b.noteCount === 'number' ? b.noteCount : 0;
+        return { _id: genId(), title: title, author: author, cover: cover, category: category, publisher: publisher, progress: progress, readTime: readTime, noteCount: noteCount, status: progress >= 100 ? '读完' : progress > 0 ? '在读' : '想读', raw: b };
       });
-  }
-  function syncWeread() {
-    if (!isBackendConfigured()) { toast('后端未连接：请检查 Worker 网关配置'); return Promise.resolve(); }
-    setSync('syncing');
-    toast('正在同步微信读书…');
-    var books = [], stats = null, notebooks = [];
-    return wereadFetch('/shelf/sync')
-      .then(function(data) {
-        books = (data && data.books) || (data && data.data && data.data.books) || [];
-        // 兼容多种可能的字段形态
-        return wereadFetch('/readdata/detail');
-      })
-      .then(function(data) {
-        stats = data && data.data ? data.data : data;
-        return wereadFetch('/user/notebooks');
-      })
-      .then(function(data) {
-        notebooks = (data && data.books) || (data && data.data && data.data.books) || [];
-        // 统一书籍结构，保留原始字段兜底
-        state.books = books.map(function(b){
-          var title = b.title || b.bookInfo && b.bookInfo.title || '未命名';
-          var author = b.author || b.bookInfo && b.bookInfo.author || '佚名';
-          var cover = b.cover || b.bookInfo && b.bookInfo.cover || '';
-          var category = b.category || b.bookInfo && b.bookInfo.category || '';
-          var publisher = b.publisher || b.bookInfo && b.bookInfo.publisher || '';
-          var progress = typeof b.readProgress === 'number' ? b.readProgress : (typeof b.progress === 'number' ? b.progress : 0);
-          var readTime = b.readTime || b.totalReadTime || 0;
-          var noteCount = typeof b.noteCount === 'number' ? b.noteCount : 0;
-          return { _id: genId(), title: title, author: author, cover: cover, category: category, publisher: publisher, progress: progress, readTime: readTime, noteCount: noteCount, status: progress >= 100 ? '读完' : progress > 0 ? '在读' : '想读', raw: b };
-        });
-        state.readStats = stats || null;
-        state.notebooks = notebooks.map(function(n){ return { _id: genId(), bookId: n.bookId || '', title: n.title || '未命名', noteCount: n.noteCount || 0, notes: n.notes || [], raw: n }; });
-        state.settings.wereadSyncedAt = new Date().toISOString();
-        return saveToRepo();
-      })
-      .then(function(){ setSync('synced'); toast('微信读书同步成功'); renderReading(); })
-      .catch(function(err){ console.error('syncWeread failed:', err); setSync('offline'); toast('同步失败：' + (err.message || '未知错误')); });
+      state.readStats = stats || null;
+      state.notebooks = notebooks.map(function(n){ return { _id: genId(), bookId: n.bookId || '', title: n.title || '未命名', noteCount: n.noteCount || 0, notes: n.notes || [], raw: n }; });
+      state.settings.wereadSyncedAt = new Date().toISOString();
+      return saveLocal();
+    }).then(function(){ toast('微信读书数据已导入'); renderReading(); })
+      .catch(function(err){ console.error('importWeread failed:', err); toast('导入失败：' + (err.message || '未知错误')); });
   }
 
   // ===== 阅读计划 =====
   function addReadingPlan(title, due, status, note) {
     var p = { _id: genId(), title: title, due: due || '', status: status || '未开始', note: note || '', created: today + 'T00:00:00Z' };
-    state.readingPlans.push(p); return saveToRepo();
+    state.readingPlans.push(p); return saveLocal();
   }
   function toggleReadingPlan(id) {
     var rec = state.readingPlans.find(function(r){ return r._id === id; }); if (!rec) return Promise.resolve();
     rec.status = rec.status === '已完成' ? '进行中' : '已完成';
-    return saveToRepo();
+    return saveLocal();
   }
-  function deleteReadingPlan(id){ state.readingPlans = state.readingPlans.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+  function deleteReadingPlan(id){ state.readingPlans = state.readingPlans.filter(function(r){ return r._id !== id; }); return saveLocal(); }
 
   // ===== 阅读 =====
   function updateWereadSyncUI() {
-    var hasCfg = isBackendConfigured();
     var syncedAt = state.settings && state.settings.wereadSyncedAt;
     var hasData = state.books && state.books.length > 0;
-    setText('wereadSyncStatus', hasData ? '已同步' : (hasCfg ? '可同步' : '后端未连接'));
-    var meta = '';
-    if (!hasCfg) meta = '后端网关未配置，请联系管理员';
-    else if (syncedAt) meta = '上次同步：' + fmtDate(syncedAt) + ' ' + (new Date(syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}));
-    else meta = '点击「立即同步」拉取微信读书数据';
+    setText('wereadSyncStatus', hasData ? '已导入' : '未导入');
+    var meta = syncedAt ? ('上次导入：' + fmtDate(syncedAt) + ' ' + (new Date(syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'}))) : '点击「导入 JSON」加载微信读书数据';
     setText('wereadSyncMeta', meta);
-    var syncBtn = document.getElementById('wereadSyncBtn');
-    if (syncBtn) syncBtn.onclick = function(){ wrapPromise(syncWeread()).then(loadAll); };
+    var btn = document.getElementById('wereadImportBtn');
+    var fileInput = document.getElementById('wereadImportFile');
+    if (btn && fileInput) {
+      btn.onclick = function(){ fileInput.click(); };
+      fileInput.onchange = function(e){
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        wrapPromise(importWeread(f)).then(loadAll);
+        fileInput.value = '';
+      };
+    }
   }
 
   function renderReading() {
@@ -2143,14 +2133,14 @@
   // ===== 健身 =====
   function addFitness(date, type, minutes, note, image) {
     var p = {}; p[FITF_.date]=date; p[FITF_.type]=type; p[FITF_.minutes]=minutes; p[FITF_.note]=note || ''; p[FITF_.image]=image || ''; p[FITF_.created]=today+'T00:00:00Z'; p._id=genId();
-    state.fitness.push(p); return saveToRepo();
+    state.fitness.push(p); return saveLocal();
   }
   function deleteFitness(id) {
     var rec = state.fitness.find(function(r){ return r._id === id; });
     var chain = Promise.resolve();
     if (rec && rec[FITF_.image]) chain = deleteImageFromRepo(rec[FITF_.image]);
     state.fitness = state.fitness.filter(function(r){ return r._id !== id; });
-    return chain.then(function(){ return saveToRepo(); });
+    return chain.then(function(){ return saveLocal(); });
   }
   function renderFitness() {
     var ws = weekStart(), ms = monthStart();
@@ -2175,9 +2165,9 @@
   // ===== 纪念日 =====
   function addAnniversary(title, date, type, note) {
     var p = {}; p[ANF_.title]=title; p[ANF_.date]=date; p[ANF_.type]=type; p[ANF_.note]=note || ''; p[ANF_.created]=today+'T00:00:00Z'; p._id=genId();
-    state.anniversaries.push(p); return saveToRepo();
+    state.anniversaries.push(p); return saveLocal();
   }
-  function deleteAnniversary(id){ state.anniversaries = state.anniversaries.filter(function(r){ return r._id !== id; }); return saveToRepo(); }
+  function deleteAnniversary(id){ state.anniversaries = state.anniversaries.filter(function(r){ return r._id !== id; }); return saveLocal(); }
   function renderAnniversaries() {
     var list = document.getElementById('anniversaryList'); list.innerHTML = '';
     document.getElementById('anniversaryEmpty').style.display = state.anniversaries.length ? 'none' : 'block';
@@ -2205,7 +2195,7 @@
   // ===== 随笔 =====
   function addNote(title, content, mood, images) {
     var p = {}; p[NOTF_.title]=title; p[NOTF_.content]=content; p[NOTF_.mood]=mood; p[NOTF_.images]=images || []; p[NOTF_.created]=today+'T00:00:00Z'; p._id=genId();
-    state.notes.push(p); return saveToRepo();
+    state.notes.push(p); return saveLocal();
   }
   function deleteNote(id) {
     var rec = state.notes.find(function(r){ return r._id === id; });
@@ -2214,7 +2204,7 @@
       rec[NOTF_.images].forEach(function(p){ chain = chain.then(function(){ return deleteImageFromRepo(p); }); });
     }
     state.notes = state.notes.filter(function(r){ return r._id !== id; });
-    return chain.then(function(){ return saveToRepo(); });
+    return chain.then(function(){ return saveLocal(); });
   }
   function renderNotes() {
     var list = document.getElementById('noteList'); list.innerHTML = '';
@@ -2426,13 +2416,13 @@
   state.settingsId = null;
 
   function loadSettings() {
-    // 设置已随仓库 data.json 全量数据在 loadFromRepo() 中载入 state.settings，此处无需单独拉取。
+    // 设置已随仓库 data.json 全量数据在 loadLocal() 中载入 state.settings，此处无需单独拉取。
     return Promise.resolve();
   }
 
   function saveSettings() {
     // 设置是 data.json 的一部分，直接随整体写回。
-    return saveToRepo();
+    return saveLocal();
   }
 
   function applySettings() {
@@ -2494,7 +2484,11 @@
       });
     }
     var bs = document.getElementById('backendStatus');
-    if (bs) { bs.textContent = isBackendConfigured() ? '已连接（Worker 网关）' : '未连接'; bs.classList.toggle('ok', isBackendConfigured()); }
+    if (bs) {
+      if (!fsSupported()) { bs.textContent = '浏览器不支持（请用 Chrome/Edge）'; bs.classList.remove('ok'); }
+      else if (fsDirHandle) { bs.textContent = '已连接：' + (fsDirHandle.name || '已选择'); bs.classList.add('ok'); }
+      else { bs.textContent = '未选择'; bs.classList.remove('ok'); }
+    }
     updateWereadSyncUI();
   }
 
@@ -2550,7 +2544,7 @@
     state.habits = []; state.records = []; state.todos = []; state.focus = [];
     state.reading = []; state.fitness = []; state.anniversaries = []; state.notes = [];
     state.books = []; state.readStats = null; state.notebooks = []; state.readingPlans = [];
-    saveToRepo()
+    saveLocal()
       .then(function(){ toast('已清空全部数据'); loadAll(); })
       .catch(function(){ showSpinner(false); toast('清空失败，请重试'); });
   }
@@ -2568,11 +2562,25 @@
   var brandText = document.getElementById('brandText');
   if (brandText) brandText.style.display = ((state.currentSection || 'home') === 'home') ? 'block' : 'none';
 
+  function setupFs() {
+    var bind = function(btn){
+      if (!btn) return;
+      btn.onclick = function(){
+        if (!fsSupported()) { toast('当前浏览器不支持本地文件存储，请使用 Chrome / Edge'); return; }
+        ensureDir().then(function(){ return loadLocal(); }).then(function(){ renderAll(); toast('数据文件夹已就绪'); })
+          .catch(function(err){ toast('选择失败：' + (err && err.message ? err.message : err)); });
+      };
+    };
+    bind(document.getElementById('topDataFolderBtn'));
+    bind(document.getElementById('dataFolderBtn'));
+  }
+
   function boot() {
     loadSettings().then(function(){ return loadAll(); })
       .then(function(){ applySettings(); renderSettings(); renderGreeting(); initTimer(); })
       .catch(function(){ initTimer(); });
   }
+  setupFs();
   boot();
 })();
 </script>
